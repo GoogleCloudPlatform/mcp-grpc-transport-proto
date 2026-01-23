@@ -23,9 +23,15 @@ def generate_protos():
     # Include the proto directory so imports work if there were any (mcp.proto imports google/protobuf/...)
     # We also include the project root just in case.
     
+    # Including the grpc_tools _proto directory is required to find well-known types
+    # like google/protobuf/struct.proto, timestamp.proto, etc.
+    # See: https://github.com/grpc/grpc/issues/15918
+    grpc_tools_include = os.path.join(os.path.dirname(protoc.__file__), "_proto")
+
     # protoc command arguments
     protoc_args = [
         "grpc_tools.protoc",
+        f"-I{grpc_tools_include}",
         f"-I{proto_dir}",
         f"-I{project_root}", 
         f"--python_out={out_dir}",
