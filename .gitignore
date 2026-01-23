@@ -1,0 +1,21 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Build
+dist/
+build/
+*.egg-info/
+
+# Environments
+.venv/
+.env
+
+# IDE
+.vscode/
+.idea/
+
+# Lock file (library)
+uv.lock

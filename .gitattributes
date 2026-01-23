@@ -1,0 +1,4 @@
+# Mark generated files
+src/mcp_transport_proto/*_pb2.py linguist-generated=true
+src/mcp_transport_proto/*_pb2_grpc.py linguist-generated=true
+src/mcp_transport_proto/*.pyi linguist-generated=true
