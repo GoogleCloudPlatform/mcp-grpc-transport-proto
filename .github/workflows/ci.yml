@@ -1,0 +1,36 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.9", "3.10", "3.11", "3.12"]
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install uv
+      uses: astral-sh/setup-uv@v5
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Install dependencies
+      run: uv sync
+
+    - name: Generate protos
+      run: uv run python generate.py
+
+    - name: Build package
+      run: uv build
+
+    - name: Verify package installation and usage
+      run: |
+        # Run the example script to verify it works
+        uv run python examples/basic_usage.py
