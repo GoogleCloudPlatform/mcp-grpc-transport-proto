@@ -22,8 +22,8 @@ dependencies = [
 ]
 
 [project.urls]
-"Homepage" = "https://github.com/modelcontextprotocol/mcp-grpc-transport-proto"
-"Bug Tracker" = "https://github.com/modelcontextprotocol/mcp-grpc-transport-proto/issues"
+"Homepage" = "https://github.com/GoogleCloudPlatform/mcp-grpc-transport-proto"
+"Bug Tracker" = "https://github.com/GoogleCloudPlatform/mcp-grpc-transport-proto/issues"
 
 [tool.setuptools.packages.find]
 where = ["src"]
