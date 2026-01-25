@@ -1,0 +1,300 @@
+// MCP Streaming Extensions
+// Extends the base MCP protocol with true gRPC streaming capabilities.
+//
+// These extensions provide:
+// - Bidirectional session streaming for multiplexed requests
+// - Resource change notifications (watch/subscribe)
+// - Parallel tool execution with streaming results
+// - Chunked resource reading for large payloads
+// - Connection lifecycle management (initialize/ping)
+//
+// Design rationale:
+// The base MCP proto uses the dependent_requests/dependent_responses pattern
+// for server-to-client communication, which requires polling. These extensions
+// leverage gRPC's native streaming to enable true push notifications and
+// bidirectional communication.
+
+syntax = "proto3";
+
+package model_context_protocol.streaming;
+
+import "proto/mcp.proto";
+import "google/protobuf/struct.proto";
+import "google/protobuf/timestamp.proto";
+
+// Extended MCP service with streaming capabilities.
+// Implementations can support both the base Mcp service and this extended service.
+service McpStreaming {
+  //
+  // Connection Lifecycle
+  //
+
+  // Initialize the connection and exchange capabilities.
+  rpc Initialize(InitializeRequest) returns (InitializeResponse);
+
+  // Ping to check connection health.
+  rpc Ping(PingRequest) returns (PingResponse);
+
+  //
+  // Bidirectional Session
+  //
+
+  // Multiplexed bidirectional stream for all MCP operations.
+  // Allows multiple concurrent requests over a single connection with
+  // proper request/response correlation via message_id.
+  // This is the preferred method for long-lived connections.
+  rpc Session(stream SessionRequest) returns (stream SessionResponse);
+
+  //
+  // Streaming Resources
+  //
+
+  // Watch for resource changes. Server streams notifications when
+  // resources matching the patterns are created, updated, or deleted.
+  rpc WatchResources(WatchResourcesRequest) returns (stream WatchResourcesResponse);
+
+  // Read a resource in chunks. Useful for large resources that shouldn't
+  // be buffered entirely in memory.
+  rpc ReadResourceChunked(ReadResourceChunkedRequest) returns (stream ResourceChunk);
+
+  //
+  // Streaming Tools
+  //
+
+  // Execute multiple tools in parallel. Client streams tool requests,
+  // server streams results as they complete. Results may arrive in
+  // different order than requests.
+  rpc StreamToolCalls(stream StreamToolCallsRequest) returns (stream StreamToolCallsResponse);
+
+  // Call a tool with streaming progress updates.
+  // Unlike base CallTool which only streams the final result,
+  // this explicitly streams progress notifications during execution.
+  rpc CallToolWithProgress(model_context_protocol.CallToolRequest)
+      returns (stream CallToolProgressResponse);
+
+  //
+  // Streaming Prompts
+  //
+
+  // Stream prompt completion tokens for real-time display.
+  rpc StreamPromptCompletion(StreamPromptCompletionRequest)
+      returns (stream StreamPromptCompletionResponse);
+}
+
+//
+// Connection Lifecycle Messages
+//
+
+message ClientInfo {
+  string name = 1;
+  string version = 2;
+}
+
+message ServerInfo {
+  string name = 1;
+  string version = 2;
+}
+
+message ClientCapabilities {
+  bool supports_sampling = 1;
+  bool supports_roots = 2;
+  bool supports_elicitation = 3;
+  // Streaming-specific capabilities
+  bool supports_session_streaming = 4;
+  bool supports_resource_watching = 5;
+}
+
+message ServerCapabilities {
+  bool supports_tools = 1;
+  bool supports_resources = 2;
+  bool supports_prompts = 3;
+  bool supports_logging = 4;
+  // Streaming-specific capabilities
+  bool supports_session_streaming = 5;
+  bool supports_resource_watching = 6;
+  bool supports_chunked_resources = 7;
+  bool supports_tool_streaming = 8;
+}
+
+message InitializeRequest {
+  model_context_protocol.ProtocolVersion protocol_version = 1;
+  ClientInfo client_info = 2;
+  ClientCapabilities capabilities = 3;
+}
+
+message InitializeResponse {
+  model_context_protocol.ProtocolVersion protocol_version = 1;
+  ServerInfo server_info = 2;
+  ServerCapabilities capabilities = 3;
+  string instructions = 4;  // Optional server instructions
+}
+
+message PingRequest {}
+
+message PingResponse {}
+
+//
+// Session Messages
+//
+
+message SessionRequest {
+  string message_id = 1;  // For request/response correlation
+
+  // Exactly one payload field must be set
+  InitializeRequest initialize = 2;
+  PingRequest ping = 3;
+  model_context_protocol.ListToolsRequest list_tools = 4;
+  model_context_protocol.ListResourcesRequest list_resources = 5;
+  model_context_protocol.ListResourceTemplatesRequest list_resource_templates = 6;
+  model_context_protocol.ListPromptsRequest list_prompts = 7;
+  model_context_protocol.CallToolRequest call_tool = 8;
+  model_context_protocol.ReadResourceRequest read_resource = 9;
+  model_context_protocol.GetPromptRequest get_prompt = 10;
+  model_context_protocol.CompletionRequest complete = 11;
+  WatchResourcesRequest watch_resources = 12;
+  ReadResourceChunkedRequest read_resource_chunked = 13;
+  StreamPromptCompletionRequest stream_prompt_completion = 14;
+  CancelRequest cancel = 15;
+}
+
+message SessionResponse {
+  string in_reply_to = 1;  // References the request message_id
+
+  // Exactly one payload field must be set
+  InitializeResponse initialize = 2;
+  PingResponse ping = 3;
+  ListToolsStreamResponse list_tools = 4;
+  ListResourcesStreamResponse list_resources = 5;
+  ListResourceTemplatesStreamResponse list_resource_templates = 6;
+  ListPromptsStreamResponse list_prompts = 7;
+  model_context_protocol.CallToolResponse call_tool = 8;
+  model_context_protocol.ReadResourceResponse read_resource = 9;
+  model_context_protocol.GetPromptResponse get_prompt = 10;
+  model_context_protocol.CompletionResponse complete = 11;
+  WatchResourcesResponse resource_notification = 12;
+  ResourceChunk resource_chunk = 13;
+  StreamPromptCompletionResponse completion_chunk = 14;
+  StreamEnd stream_end = 15;
+  StreamError stream_error = 16;
+}
+
+// Individual item responses for streaming within Session
+message ListToolsStreamResponse {
+  model_context_protocol.Tool tool = 1;
+}
+
+message ListResourcesStreamResponse {
+  model_context_protocol.Resource resource = 1;
+}
+
+message ListResourceTemplatesStreamResponse {
+  model_context_protocol.ResourceTemplate resource_template = 1;
+}
+
+message ListPromptsStreamResponse {
+  model_context_protocol.Prompt prompt = 1;
+}
+
+message CancelRequest {
+  string request_id = 1;  // The message_id of the request to cancel
+}
+
+message StreamEnd {
+  string request_id = 1;
+}
+
+message StreamError {
+  int32 code = 1;
+  string message = 2;
+  google.protobuf.Struct data = 3;  // Optional additional error data
+}
+
+//
+// Resource Watching Messages
+//
+
+message WatchResourcesRequest {
+  model_context_protocol.RequestFields common = 1;
+  repeated string uri_patterns = 2;  // Glob patterns to match
+  bool include_initial = 3;  // If true, stream current matching resources first
+}
+
+enum ResourceChangeType {
+  RESOURCE_CHANGE_TYPE_UNSPECIFIED = 0;
+  RESOURCE_CHANGE_TYPE_CREATED = 1;
+  RESOURCE_CHANGE_TYPE_UPDATED = 2;
+  RESOURCE_CHANGE_TYPE_DELETED = 3;
+}
+
+message WatchResourcesResponse {
+  model_context_protocol.ResponseFields common = 1;
+  string uri = 2;
+  ResourceChangeType change_type = 3;
+  google.protobuf.Timestamp timestamp = 4;
+  model_context_protocol.Resource resource = 5;  // Present for CREATED/UPDATED
+}
+
+//
+// Chunked Resource Reading Messages
+//
+
+message ReadResourceChunkedRequest {
+  model_context_protocol.RequestFields common = 1;
+  string uri = 2;
+  int32 chunk_size = 3;  // Suggested chunk size in bytes (0 = server default)
+}
+
+message ResourceChunk {
+  model_context_protocol.ResponseFields common = 1;
+  string uri = 2;
+  string mime_type = 3;
+  bytes data = 4;
+  int32 chunk_index = 5;
+  int64 total_size = 6;  // Total resource size if known, -1 if unknown
+  bool is_last = 7;
+}
+
+//
+// Streaming Tool Calls Messages
+//
+
+message StreamToolCallsRequest {
+  model_context_protocol.RequestFields common = 1;
+  string request_id = 2;  // Client-assigned ID for this specific tool call
+  string name = 3;
+  google.protobuf.Struct arguments = 4;
+}
+
+message StreamToolCallsResponse {
+  model_context_protocol.ResponseFields common = 1;
+  string request_id = 2;  // Echoes the client's request_id
+
+  // Exactly one of these must be set
+  model_context_protocol.CallToolResponse.Content success = 3;
+  StreamError error = 4;
+}
+
+message CallToolProgressResponse {
+  model_context_protocol.ResponseFields common = 1;
+
+  // Exactly one of these must be set
+  model_context_protocol.ProgressNotification progress = 2;
+  model_context_protocol.CallToolResponse result = 3;
+}
+
+//
+// Streaming Prompt Completion Messages
+//
+
+message StreamPromptCompletionRequest {
+  model_context_protocol.RequestFields common = 1;
+  string name = 2;
+  map<string, string> arguments = 3;
+}
+
+message StreamPromptCompletionResponse {
+  model_context_protocol.ResponseFields common = 1;
+  string token = 2;
+  bool is_final = 3;
+  string finish_reason = 4;  // Optional, present when is_final=true
+}
