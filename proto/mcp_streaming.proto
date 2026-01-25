@@ -298,3 +298,88 @@ message StreamPromptCompletionResponse {
   bool is_final = 3;
   string finish_reason = 4;  // Optional, present when is_final=true
 }
+
+//
+// Schema Registry Service (Optional)
+//
+// This service is optional for implementations that want dynamic schema
+// discovery and evolution. It integrates with schema registries like
+// Confluent Schema Registry, Apicurio, or AWS Glue.
+//
+// Use cases:
+// - Gateways/proxies fetching tool schemas without compile-time codegen
+// - Schema evolution without redeploying clients
+// - Multi-tenant systems with different tool schemas per tenant
+// - Runtime validation and transformation
+//
+
+service McpSchemaRegistry {
+  // Get the schema for a specific tool's input/output
+  rpc GetToolSchema(GetToolSchemaRequest) returns (GetToolSchemaResponse);
+
+  // Register a new tool schema version
+  rpc RegisterToolSchema(RegisterToolSchemaRequest) returns (RegisterToolSchemaResponse);
+
+  // List all registered schemas
+  rpc ListSchemas(ListSchemasRequest) returns (ListSchemasResponse);
+
+  // Check if a new schema is compatible with existing versions
+  rpc CheckCompatibility(CheckCompatibilityRequest) returns (CheckCompatibilityResponse);
+}
+
+message SchemaInfo {
+  string tool_name = 1;
+  string version = 2;
+  string input_type_url = 3;   // e.g. "type.googleapis.com/mcp.MyToolInput"
+  string output_type_url = 4;  // Optional, for tools with output schemas
+  bytes descriptor_bytes = 5;  // Serialized FileDescriptorProto
+}
+
+message GetToolSchemaRequest {
+  string tool_name = 1;
+  string version = 2;  // Optional, latest if not specified
+}
+
+message GetToolSchemaResponse {
+  SchemaInfo schema = 1;
+}
+
+message RegisterToolSchemaRequest {
+  SchemaInfo schema = 1;
+  bool check_compatibility = 2;  // If true, reject incompatible changes
+}
+
+message RegisterToolSchemaResponse {
+  string version = 1;  // Assigned version ID
+  bool is_compatible = 2;
+}
+
+message ListSchemasRequest {
+  string tool_name_prefix = 1;  // Optional filter
+  int32 page_size = 2;
+  string page_token = 3;
+}
+
+message ListSchemasResponse {
+  repeated SchemaInfo schemas = 1;
+  string next_page_token = 2;
+}
+
+enum CompatibilityMode {
+  COMPATIBILITY_MODE_UNSPECIFIED = 0;
+  COMPATIBILITY_MODE_BACKWARD = 1;   // New schema can read old data
+  COMPATIBILITY_MODE_FORWARD = 2;    // Old schema can read new data
+  COMPATIBILITY_MODE_FULL = 3;       // Both directions
+  COMPATIBILITY_MODE_NONE = 4;       // No compatibility checking
+}
+
+message CheckCompatibilityRequest {
+  string tool_name = 1;
+  SchemaInfo new_schema = 2;
+  CompatibilityMode mode = 3;
+}
+
+message CheckCompatibilityResponse {
+  bool is_compatible = 1;
+  repeated string incompatibilities = 2;  // Description of breaking changes
+}
