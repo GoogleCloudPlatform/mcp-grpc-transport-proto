@@ -16,15 +16,15 @@
 
 syntax = "proto3";
 
-package model_context_protocol.streaming;
+package model_context_protocol.v1;
 
-import "proto/mcp.proto";
 import "google/protobuf/struct.proto";
 import "google/protobuf/timestamp.proto";
+import "model_context_protocol/v1/mcp.proto";
 
 // Extended MCP service with streaming capabilities.
 // Implementations can support both the base Mcp service and this extended service.
-service McpStreaming {
+service McpStreamingService {
   //
   // Connection Lifecycle
   //
@@ -55,7 +55,7 @@ service McpStreaming {
 
   // Read a resource in chunks. Useful for large resources that shouldn't
   // be buffered entirely in memory.
-  rpc ReadResourceChunked(ReadResourceChunkedRequest) returns (stream ResourceChunk);
+  rpc ReadResourceChunked(ReadResourceChunkedRequest) returns (stream ReadResourceChunkedResponse);
 
   //
   // Streaming Tools
@@ -69,16 +69,14 @@ service McpStreaming {
   // Call a tool with streaming progress updates.
   // Unlike base CallTool which only streams the final result,
   // this explicitly streams progress notifications during execution.
-  rpc CallToolWithProgress(model_context_protocol.CallToolRequest)
-      returns (stream CallToolProgressResponse);
+  rpc CallToolWithProgress(CallToolWithProgressRequest) returns (stream CallToolWithProgressResponse);
 
   //
   // Streaming Prompts
   //
 
   // Stream prompt completion tokens for real-time display.
-  rpc StreamPromptCompletion(StreamPromptCompletionRequest)
-      returns (stream StreamPromptCompletionResponse);
+  rpc StreamPromptCompletion(StreamPromptCompletionRequest) returns (stream StreamPromptCompletionResponse);
 }
 
 //
@@ -117,16 +115,16 @@ message ServerCapabilities {
 }
 
 message InitializeRequest {
-  model_context_protocol.ProtocolVersion protocol_version = 1;
+  model_context_protocol.v1.ProtocolVersion protocol_version = 1;
   ClientInfo client_info = 2;
   ClientCapabilities capabilities = 3;
 }
 
 message InitializeResponse {
-  model_context_protocol.ProtocolVersion protocol_version = 1;
+  model_context_protocol.v1.ProtocolVersion protocol_version = 1;
   ServerInfo server_info = 2;
   ServerCapabilities capabilities = 3;
-  string instructions = 4;  // Optional server instructions
+  string instructions = 4; // Optional server instructions
 }
 
 message PingRequest {}
@@ -138,19 +136,19 @@ message PingResponse {}
 //
 
 message SessionRequest {
-  string message_id = 1;  // For request/response correlation
+  string message_id = 1; // For request/response correlation
 
   // Exactly one payload field must be set
   InitializeRequest initialize = 2;
   PingRequest ping = 3;
-  model_context_protocol.ListToolsRequest list_tools = 4;
-  model_context_protocol.ListResourcesRequest list_resources = 5;
-  model_context_protocol.ListResourceTemplatesRequest list_resource_templates = 6;
-  model_context_protocol.ListPromptsRequest list_prompts = 7;
-  model_context_protocol.CallToolRequest call_tool = 8;
-  model_context_protocol.ReadResourceRequest read_resource = 9;
-  model_context_protocol.GetPromptRequest get_prompt = 10;
-  model_context_protocol.CompletionRequest complete = 11;
+  model_context_protocol.v1.ListToolsRequest list_tools = 4;
+  model_context_protocol.v1.ListResourcesRequest list_resources = 5;
+  model_context_protocol.v1.ListResourceTemplatesRequest list_resource_templates = 6;
+  model_context_protocol.v1.ListPromptsRequest list_prompts = 7;
+  model_context_protocol.v1.CallToolRequest call_tool = 8;
+  model_context_protocol.v1.ReadResourceRequest read_resource = 9;
+  model_context_protocol.v1.GetPromptRequest get_prompt = 10;
+  model_context_protocol.v1.CompleteRequest complete = 11;
   WatchResourcesRequest watch_resources = 12;
   ReadResourceChunkedRequest read_resource_chunked = 13;
   StreamPromptCompletionRequest stream_prompt_completion = 14;
@@ -158,7 +156,7 @@ message SessionRequest {
 }
 
 message SessionResponse {
-  string in_reply_to = 1;  // References the request message_id
+  string in_reply_to = 1; // References the request message_id
 
   // Exactly one payload field must be set
   InitializeResponse initialize = 2;
@@ -167,12 +165,12 @@ message SessionResponse {
   ListResourcesStreamResponse list_resources = 5;
   ListResourceTemplatesStreamResponse list_resource_templates = 6;
   ListPromptsStreamResponse list_prompts = 7;
-  model_context_protocol.CallToolResponse call_tool = 8;
-  model_context_protocol.ReadResourceResponse read_resource = 9;
-  model_context_protocol.GetPromptResponse get_prompt = 10;
-  model_context_protocol.CompletionResponse complete = 11;
+  model_context_protocol.v1.CallToolResponse call_tool = 8;
+  model_context_protocol.v1.ReadResourceResponse read_resource = 9;
+  model_context_protocol.v1.GetPromptResponse get_prompt = 10;
+  model_context_protocol.v1.CompleteResponse complete = 11;
   WatchResourcesResponse resource_notification = 12;
-  ResourceChunk resource_chunk = 13;
+  ReadResourceChunkedResponse resource_chunk = 13;
   StreamPromptCompletionResponse completion_chunk = 14;
   StreamEnd stream_end = 15;
   StreamError stream_error = 16;
@@ -180,23 +178,23 @@ message SessionResponse {
 
 // Individual item responses for streaming within Session
 message ListToolsStreamResponse {
-  model_context_protocol.Tool tool = 1;
+  model_context_protocol.v1.Tool tool = 1;
 }
 
 message ListResourcesStreamResponse {
-  model_context_protocol.Resource resource = 1;
+  model_context_protocol.v1.Resource resource = 1;
 }
 
 message ListResourceTemplatesStreamResponse {
-  model_context_protocol.ResourceTemplate resource_template = 1;
+  model_context_protocol.v1.ResourceTemplate resource_template = 1;
 }
 
 message ListPromptsStreamResponse {
-  model_context_protocol.Prompt prompt = 1;
+  model_context_protocol.v1.Prompt prompt = 1;
 }
 
 message CancelRequest {
-  string request_id = 1;  // The message_id of the request to cancel
+  string request_id = 1; // The message_id of the request to cancel
 }
 
 message StreamEnd {
@@ -206,7 +204,7 @@ message StreamEnd {
 message StreamError {
   int32 code = 1;
   string message = 2;
-  google.protobuf.Struct data = 3;  // Optional additional error data
+  google.protobuf.Struct data = 3; // Optional additional error data
 }
 
 //
@@ -214,9 +212,9 @@ message StreamError {
 //
 
 message WatchResourcesRequest {
-  model_context_protocol.RequestFields common = 1;
-  repeated string uri_patterns = 2;  // Glob patterns to match
-  bool include_initial = 3;  // If true, stream current matching resources first
+  model_context_protocol.v1.RequestFields common = 1;
+  repeated string uri_patterns = 2; // Glob patterns to match
+  bool include_initial = 3; // If true, stream current matching resources first
 }
 
 enum ResourceChangeType {
@@ -227,11 +225,11 @@ enum ResourceChangeType {
 }
 
 message WatchResourcesResponse {
-  model_context_protocol.ResponseFields common = 1;
+  model_context_protocol.v1.ResponseFields common = 1;
   string uri = 2;
   ResourceChangeType change_type = 3;
   google.protobuf.Timestamp timestamp = 4;
-  model_context_protocol.Resource resource = 5;  // Present for CREATED/UPDATED
+  model_context_protocol.v1.Resource resource = 5; // Present for CREATED/UPDATED
 }
 
 //
@@ -239,18 +237,18 @@ message WatchResourcesResponse {
 //
 
 message ReadResourceChunkedRequest {
-  model_context_protocol.RequestFields common = 1;
+  model_context_protocol.v1.RequestFields common = 1;
   string uri = 2;
-  int32 chunk_size = 3;  // Suggested chunk size in bytes (0 = server default)
+  int32 chunk_size = 3; // Suggested chunk size in bytes (0 = server default)
 }
 
-message ResourceChunk {
-  model_context_protocol.ResponseFields common = 1;
+message ReadResourceChunkedResponse {
+  model_context_protocol.v1.ResponseFields common = 1;
   string uri = 2;
   string mime_type = 3;
   bytes data = 4;
   int32 chunk_index = 5;
-  int64 total_size = 6;  // Total resource size if known, -1 if unknown
+  int64 total_size = 6; // Total resource size if known, -1 if unknown
   bool is_last = 7;
 }
 
@@ -259,27 +257,33 @@ message ResourceChunk {
 //
 
 message StreamToolCallsRequest {
-  model_context_protocol.RequestFields common = 1;
-  string request_id = 2;  // Client-assigned ID for this specific tool call
+  model_context_protocol.v1.RequestFields common = 1;
+  string request_id = 2; // Client-assigned ID for this specific tool call
   string name = 3;
   google.protobuf.Struct arguments = 4;
 }
 
 message StreamToolCallsResponse {
-  model_context_protocol.ResponseFields common = 1;
-  string request_id = 2;  // Echoes the client's request_id
+  model_context_protocol.v1.ResponseFields common = 1;
+  string request_id = 2; // Echoes the client's request_id
 
   // Exactly one of these must be set
-  model_context_protocol.CallToolResponse.Content success = 3;
+  model_context_protocol.v1.CallToolResponse.Content success = 3;
   StreamError error = 4;
 }
 
-message CallToolProgressResponse {
-  model_context_protocol.ResponseFields common = 1;
+message CallToolWithProgressRequest {
+  model_context_protocol.v1.RequestFields common = 1;
+  string name = 2;
+  google.protobuf.Struct arguments = 3;
+}
+
+message CallToolWithProgressResponse {
+  model_context_protocol.v1.ResponseFields common = 1;
 
   // Exactly one of these must be set
-  model_context_protocol.ProgressNotification progress = 2;
-  model_context_protocol.CallToolResponse result = 3;
+  model_context_protocol.v1.ProgressNotification progress = 2;
+  model_context_protocol.v1.CallToolResponse result = 3;
 }
 
 //
@@ -287,16 +291,16 @@ message CallToolProgressResponse {
 //
 
 message StreamPromptCompletionRequest {
-  model_context_protocol.RequestFields common = 1;
+  model_context_protocol.v1.RequestFields common = 1;
   string name = 2;
   map<string, string> arguments = 3;
 }
 
 message StreamPromptCompletionResponse {
-  model_context_protocol.ResponseFields common = 1;
+  model_context_protocol.v1.ResponseFields common = 1;
   string token = 2;
   bool is_final = 3;
-  string finish_reason = 4;  // Optional, present when is_final=true
+  string finish_reason = 4; // Optional, present when is_final=true
 }
 
 //
@@ -313,7 +317,7 @@ message StreamPromptCompletionResponse {
 // - Runtime validation and transformation
 //
 
-service McpSchemaRegistry {
+service McpSchemaRegistryService {
   // Get the schema for a specific tool's input/output
   rpc GetToolSchema(GetToolSchemaRequest) returns (GetToolSchemaResponse);
 
@@ -330,14 +334,14 @@ service McpSchemaRegistry {
 message SchemaInfo {
   string tool_name = 1;
   string version = 2;
-  string input_type_url = 3;   // e.g. "type.googleapis.com/mcp.MyToolInput"
-  string output_type_url = 4;  // Optional, for tools with output schemas
-  bytes descriptor_bytes = 5;  // Serialized FileDescriptorProto
+  string input_type_url = 3; // e.g. "type.googleapis.com/mcp.MyToolInput"
+  string output_type_url = 4; // Optional, for tools with output schemas
+  bytes descriptor_bytes = 5; // Serialized FileDescriptorProto
 }
 
 message GetToolSchemaRequest {
   string tool_name = 1;
-  string version = 2;  // Optional, latest if not specified
+  string version = 2; // Optional, latest if not specified
 }
 
 message GetToolSchemaResponse {
@@ -346,16 +350,16 @@ message GetToolSchemaResponse {
 
 message RegisterToolSchemaRequest {
   SchemaInfo schema = 1;
-  bool check_compatibility = 2;  // If true, reject incompatible changes
+  bool check_compatibility = 2; // If true, reject incompatible changes
 }
 
 message RegisterToolSchemaResponse {
-  string version = 1;  // Assigned version ID
+  string version = 1; // Assigned version ID
   bool is_compatible = 2;
 }
 
 message ListSchemasRequest {
-  string tool_name_prefix = 1;  // Optional filter
+  string tool_name_prefix = 1; // Optional filter
   int32 page_size = 2;
   string page_token = 3;
 }
@@ -367,10 +371,10 @@ message ListSchemasResponse {
 
 enum CompatibilityMode {
   COMPATIBILITY_MODE_UNSPECIFIED = 0;
-  COMPATIBILITY_MODE_BACKWARD = 1;   // New schema can read old data
-  COMPATIBILITY_MODE_FORWARD = 2;    // Old schema can read new data
-  COMPATIBILITY_MODE_FULL = 3;       // Both directions
-  COMPATIBILITY_MODE_NONE = 4;       // No compatibility checking
+  COMPATIBILITY_MODE_BACKWARD = 1; // New schema can read old data
+  COMPATIBILITY_MODE_FORWARD = 2; // Old schema can read new data
+  COMPATIBILITY_MODE_FULL = 3; // Both directions
+  COMPATIBILITY_MODE_NONE = 4; // No compatibility checking
 }
 
 message CheckCompatibilityRequest {
@@ -381,5 +385,5 @@ message CheckCompatibilityRequest {
 
 message CheckCompatibilityResponse {
   bool is_compatible = 1;
-  repeated string incompatibilities = 2;  // Description of breaking changes
+  repeated string incompatibilities = 2; // Description of breaking changes
 }

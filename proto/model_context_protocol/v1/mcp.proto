@@ -4,12 +4,12 @@
 
 syntax = "proto3";
 
-package model_context_protocol;
+package model_context_protocol.v1;
 
 import "google/protobuf/duration.proto";
 import "google/protobuf/struct.proto";
 
-service Mcp {
+service McpService {
   //
   // Resources
   //
@@ -22,8 +22,7 @@ service Mcp {
   // mcp_resource whose value is the name of the resource being requested.
   rpc ReadResource(ReadResourceRequest) returns (ReadResourceResponse);
   // List resource templates.
-  rpc ListResourceTemplates(ListResourceTemplatesRequest)
-      returns (ListResourceTemplatesResponse);
+  rpc ListResourceTemplates(ListResourceTemplatesRequest) returns (ListResourceTemplatesResponse);
 
   //
   // Prompts
@@ -60,7 +59,7 @@ service Mcp {
   // request routing and authz, the client will add a header called
   // mcp_resource whose value is the name of the resource or prompt being
   // used for completion.
-  rpc Complete(CompletionRequest) returns (CompletionResponse);
+  rpc Complete(CompleteRequest) returns (CompleteResponse);
 
   //
   // Cancellation
@@ -70,9 +69,9 @@ service Mcp {
 }
 
 enum ProtocolVersion {
-  VERSION_UNKNOWN = 0;
-  VERSION_20250326 = 1;
-  VERSION_20250618 = 2;
+  PROTOCOL_VERSION_UNSPECIFIED = 0;
+  PROTOCOL_VERSION_20250326 = 1;
+  PROTOCOL_VERSION_20250618 = 2;
   // More values can be added as needed.
 }
 
@@ -90,7 +89,7 @@ message ProgressNotification {
 // Logging, as per
 // https://modelcontextprotocol.io/specification/2025-03-26/server/utilities/logging.
 enum LogLevel {
-  LOG_LEVEL_UNKNOWN = 0;
+  LOG_LEVEL_UNSPECIFIED = 0;
   LOG_LEVEL_DEBUG = 1;
   LOG_LEVEL_INFO = 2;
   LOG_LEVEL_NOTICE = 3;
@@ -103,7 +102,7 @@ enum LogLevel {
 
 message LogMessage {
   LogLevel log_level = 1;
-  string logger = 2;  // Optional.
+  string logger = 2; // Optional.
   google.protobuf.Value data = 3;
 }
 
@@ -151,15 +150,15 @@ message RequestFields {
 
   // Pagination support, as described in
   // https://modelcontextprotocol.io/specification/2025-03-26/server/utilities/pagination.
-  string cursor = 2;  // Optional.
+  string cursor = 2; // Optional.
 
   ProgressNotification progress = 3;
 
   // Asks the server to send logs at a particular level.
-  LogLevel log_level = 4;  // Optional.
+  LogLevel log_level = 4; // Optional.
 
   // The task ID supplied by the server, if any.
-  string task_id = 5;  // Optional.
+  string task_id = 5; // Optional.
 
   // Responses to server-initiated requests.
   map<string, ServerInitiatedResponse> dependent_responses = 6;
@@ -179,11 +178,11 @@ message ResponseFields {
 
   // Pagination support, as described in
   // https://modelcontextprotocol.io/specification/2025-03-26/server/utilities/pagination.
-  string next_cursor = 3;  // Optional.
+  string next_cursor = 3; // Optional.
 
   ProgressNotification progress = 4;
 
-  LogMessage log_message = 5;  // Optional.
+  LogMessage log_message = 5; // Optional.
 
   // Optional.  Sent only on the initial response on any RPC.
   // If populated, this indicates that the server has started a
@@ -203,31 +202,31 @@ message ResponseFields {
 }
 
 enum Role {
-  ROLE_UNKNOWN = 0;
+  ROLE_UNSPECIFIED = 0;
   ROLE_USER = 1;
   ROLE_ASSISTANT = 2;
 }
 
 message Annotations {
   repeated Role audience = 1;
-  float priority = 2;  // Must be in range [0,1].
+  float priority = 2; // Must be in range [0,1].
 }
 
 message TextContent {
   string text = 1;
-  Annotations annotations = 2;  // Optional.
+  Annotations annotations = 2; // Optional.
 }
 
 message ImageContent {
   bytes data = 1;
   string mime_type = 2;
-  Annotations annotations = 3;  // Optional.
+  Annotations annotations = 3; // Optional.
 }
 
 message AudioContent {
   bytes data = 1;
   string mime_type = 2;
-  Annotations annotations = 3;  // Optional.
+  Annotations annotations = 3; // Optional.
 }
 
 message ListRootsRequest {}
@@ -235,14 +234,14 @@ message ListRootsRequest {}
 message ListRootsResult {
   message Root {
     string uri = 1;
-    string name = 2;  // Optional.
+    string name = 2; // Optional.
   }
   repeated Root roots = 1;
 }
 
 // Represents a message that contains text or binary data.
 message SamplingMessage {
-  Role role = 1;  // Which role is sending the message.
+  Role role = 1; // Which role is sending the message.
 
   // Exactly one of these fields must be populated.
   // (Not using "oneof", since that causes forward-compatibility problems.)
@@ -256,39 +255,39 @@ message SamplingCreateMessageRequest {
 
   message ModelPreferences {
     message ModelHint {
-      string name = 1;  // Optional.
+      string name = 1; // Optional.
     }
     repeated ModelHint hints = 1;
     float intelligence_priority = 2;
     float speed_priority = 3;
     float cost_priority = 4;
   }
-  ModelPreferences model_preferences = 2;  // Optional.
+  ModelPreferences model_preferences = 2; // Optional.
 
-  string system_prompt = 3;  // Optional.
+  string system_prompt = 3; // Optional.
 
   enum IncludeContext {
-    NONE = 0;
-    THIS_SERVER = 1;
-    ALL_SERVERS = 2;
+    INCLUDE_CONTEXT_UNSPECIFIED = 0;
+    INCLUDE_CONTEXT_THIS_SERVER = 1;
+    INCLUDE_CONTEXT_ALL_SERVERS = 2;
   }
-  IncludeContext include_context = 4;  // Optional.
+  IncludeContext include_context = 4; // Optional.
 
-  float temperature = 5;              // Optional.
-  int32 max_tokens = 6;               // Optional.
-  repeated string stop_sequence = 7;  // Optional.
+  float temperature = 5; // Optional.
+  int32 max_tokens = 6; // Optional.
+  repeated string stop_sequence = 7; // Optional.
 }
 
 message SamplingCreateMessageResult {
   SamplingMessage message = 1;
   string model = 2;
-  string stop_reason = 3;  // Optional.
+  string stop_reason = 3; // Optional.
 }
 
 message PrimitiveSchemaDefinition {
   message StringSchema {
     enum Format {
-      FORMAT_UNKNOWN = 0;
+      FORMAT_UNSPECIFIED = 0;
       FORMAT_EMAIL = 1;
       FORMAT_URI = 2;
       FORMAT_DATE = 3;
@@ -330,14 +329,14 @@ message PrimitiveSchemaDefinition {
 }
 
 message ElicitRequest {
-  string message = 1;  // Message to present to user.  Required.
+  string message = 1; // Message to present to user.  Required.
   map<string, PrimitiveSchemaDefinition> requested_schema = 2;
   repeated string required_fields = 3;
 }
 
 message ElicitResult {
   enum Type {
-    UNKNOWN = 0;
+    TYPE_UNSPECIFIED = 0;
     TYPE_ACCEPT = 1;
     TYPE_DECLINE = 2;
     TYPE_CANCEL = 3;
@@ -355,10 +354,10 @@ message Resource {
   string uri = 1;
   string name = 2;
   string title = 7;
-  string description = 3;       // Optional.
-  string mime_type = 4;         // Optional.
-  Annotations annotations = 5;  // Optional.
-  uint64 size = 6;              // Optional.
+  string description = 3; // Optional.
+  string mime_type = 4; // Optional.
+  Annotations annotations = 5; // Optional.
+  uint64 size = 6; // Optional.
 }
 
 message ListResourcesRequest {
@@ -406,9 +405,9 @@ message ResourceTemplate {
   string uri_template = 1;
   string name = 2;
   string title = 6;
-  string description = 3;       // Optional.
-  string mime_type = 4;         // Optional.
-  Annotations annotations = 5;  // Optional.
+  string description = 3; // Optional.
+  string mime_type = 4; // Optional.
+  Annotations annotations = 5; // Optional.
 }
 
 message ListResourceTemplatesRequest {
@@ -430,14 +429,14 @@ message Prompt {
   message Argument {
     string name = 1;
     string title = 4;
-    string description = 2;  // Optional.
-    bool required = 3;       // Optional.
+    string description = 2; // Optional.
+    bool required = 3; // Optional.
   }
 
   string name = 1;
   string title = 4;
-  string description = 2;           // Optional.
-  repeated Argument arguments = 3;  // Optional.
+  string description = 2; // Optional.
+  repeated Argument arguments = 3; // Optional.
 }
 
 message ListPromptsRequest {
@@ -456,7 +455,7 @@ message ListPromptsResponse {
 
 message EmbeddedResource {
   ResourceContents contents = 1;
-  Annotations annotations = 2;  // Optional.
+  Annotations annotations = 2; // Optional.
 }
 
 message PromptMessage {
@@ -479,7 +478,7 @@ message GetPromptRequest {
 
 message GetPromptResponse {
   ResponseFields common = 1;
-  string description = 2;  // Optional.
+  string description = 2; // Optional.
   repeated PromptMessage messages = 3;
 }
 
@@ -488,21 +487,21 @@ message GetPromptResponse {
 //
 
 message ToolAnnotations {
-  string title = 1;           // Optional.
-  bool read_only_hint = 2;    // Optional.
-  bool destructive_hint = 3;  // Optional.
-  bool idempotent_hint = 4;   // Optional.
-  bool open_world_hint = 5;   // Optional.
+  string title = 1; // Optional.
+  bool read_only_hint = 2; // Optional.
+  bool destructive_hint = 3; // Optional.
+  bool idempotent_hint = 4; // Optional.
+  bool open_world_hint = 5; // Optional.
 }
 
 // Represents a tool.
 message Tool {
   string name = 1;
   string title = 6;
-  string description = 2;  // Optional.
+  string description = 2; // Optional.
   google.protobuf.Struct input_schema = 3;
-  google.protobuf.Struct output_schema = 5;  // Optional.
-  ToolAnnotations annotations = 4;           // Optional.
+  google.protobuf.Struct output_schema = 5; // Optional.
+  ToolAnnotations annotations = 4; // Optional.
 }
 
 message ListToolsRequest {
@@ -529,7 +528,7 @@ message CallToolRequest {
 
   // Exactly one of these fields must be populated.
   // (Not using "oneof", since that causes forward-compatibility problems.)
-  Request request = 2;  // Required on initial request only.
+  Request request = 2; // Required on initial request only.
 }
 
 message CallToolResponse {
@@ -557,7 +556,7 @@ message CallToolResponse {
   // field above if this field is set.
   google.protobuf.Struct structured_content = 3;
 
-  bool is_error = 4;  // Optional.
+  bool is_error = 4; // Optional.
 }
 
 message ResourceReference {
@@ -569,7 +568,7 @@ message PromptReference {
   string title = 2;
 }
 
-message CompletionRequest {
+message CompleteRequest {
   RequestFields common = 1;
 
   // Exactly one of these fields must be populated.
@@ -589,12 +588,12 @@ message CompletionRequest {
   Context context = 5;
 }
 
-message CompletionResponse {
+message CompleteResponse {
   ResponseFields common = 1;
 
   repeated string values = 2;
-  int64 total_matches = 3;  // Optional.
-  bool has_more = 4;        // Optional.
+  int64 total_matches = 3; // Optional.
+  bool has_more = 4; // Optional.
 }
 
 //
@@ -602,7 +601,7 @@ message CompletionResponse {
 //
 
 message CancelTaskRequest {
-  RequestFields common = 1;  // task_id must be populated.
+  RequestFields common = 1; // task_id must be populated.
 }
 
 message CancelTaskResponse {
