@@ -1,6 +1,6 @@
 // MCP protocol schema based on the MCP specification:
 // https://modelcontextprotocol.io/specification/2025-06-18/
-// Last Updated on: August 18, 2025.
+// Last Updated on: 2026-02-05
 
 syntax = "proto3";
 
@@ -8,6 +8,11 @@ package model_context_protocol;
 
 import "google/protobuf/duration.proto";
 import "google/protobuf/struct.proto";
+
+// TODO(roth):
+// - add Tasks support
+// - add anything else that might be missing from the 2025-11-25 spec
+// - add a server-side streaming call for watch-based notifications
 
 service Mcp {
   //
@@ -49,7 +54,7 @@ service Mcp {
   // In order to better integrate with existing data plane mechanisms for
   // request routing and authz, the client will add a header called
   // mcp_tool whose value is the name of the tool being called.
-  rpc CallTool(CallToolRequest) returns (stream CallToolResponse);
+  rpc CallTool(CallToolRequest) returns (CallToolResponse);
 
   //
   // Completions
@@ -61,12 +66,6 @@ service Mcp {
   // mcp_resource whose value is the name of the resource or prompt being
   // used for completion.
   rpc Complete(CompletionRequest) returns (CompletionResponse);
-
-  //
-  // Cancellation
-  //
-
-  rpc CancelTask(CancelTaskRequest) returns (CancelTaskResponse);
 }
 
 enum ProtocolVersion {
@@ -74,37 +73,6 @@ enum ProtocolVersion {
   VERSION_20250326 = 1;
   VERSION_20250618 = 2;
   // More values can be added as needed.
-}
-
-// If the request or response metadata field includes the key "progressToken"
-// and the peer supports progress notifications, then the peer will send back
-// the following.
-// https://modelcontextprotocol.io/specification/2025-03-26/basic/utilities/progress
-message ProgressNotification {
-  string progress_token = 1;
-  float progress = 2;
-  float total = 3;
-  string message = 4;
-}
-
-// Logging, as per
-// https://modelcontextprotocol.io/specification/2025-03-26/server/utilities/logging.
-enum LogLevel {
-  LOG_LEVEL_UNKNOWN = 0;
-  LOG_LEVEL_DEBUG = 1;
-  LOG_LEVEL_INFO = 2;
-  LOG_LEVEL_NOTICE = 3;
-  LOG_LEVEL_WARNING = 4;
-  LOG_LEVEL_ERROR = 5;
-  LOG_LEVEL_CRITICAL = 6;
-  LOG_LEVEL_ALERT = 7;
-  LOG_LEVEL_EMERGENCY = 8;
-}
-
-message LogMessage {
-  LogLevel log_level = 1;
-  string logger = 2;  // Optional.
-  google.protobuf.Value data = 3;
 }
 
 // Requests sent from the server to the client.
@@ -149,18 +117,6 @@ message RequestFields {
   // Escape hatch for arbitrary side-channel data.
   google.protobuf.Struct metadata = 1;
 
-  // Pagination support, as described in
-  // https://modelcontextprotocol.io/specification/2025-03-26/server/utilities/pagination.
-  string cursor = 2;  // Optional.
-
-  ProgressNotification progress = 3;
-
-  // Asks the server to send logs at a particular level.
-  LogLevel log_level = 4;  // Optional.
-
-  // The task ID supplied by the server, if any.
-  string task_id = 5;  // Optional.
-
   // Responses to server-initiated requests.
   map<string, ServerInitiatedResponse> dependent_responses = 6;
 
@@ -176,20 +132,6 @@ message ResponseFields {
 
   // Escape hatch for arbitrary side-channel data.
   google.protobuf.Struct metadata = 2;
-
-  // Pagination support, as described in
-  // https://modelcontextprotocol.io/specification/2025-03-26/server/utilities/pagination.
-  string next_cursor = 3;  // Optional.
-
-  ProgressNotification progress = 4;
-
-  LogMessage log_message = 5;  // Optional.
-
-  // Optional.  Sent only on the initial response on any RPC.
-  // If populated, this indicates that the server has started a
-  // persistent task, and the client is expected to echo back this ID
-  // in all subsequent RPCs related to the same request.
-  string task_id = 6;
 
   // Dependent requests.  The presence of this field tells the client
   // that the request is incomplete and that the client must try its
@@ -556,9 +498,11 @@ message CallToolResponse {
   // Clients that support structured output should ignore the content
   // field above if this field is set.
   google.protobuf.Struct structured_content = 3;
-
-  bool is_error = 4;  // Optional.
 }
+
+//
+// Completion
+//
 
 message ResourceReference {
   string uri = 1;
@@ -595,16 +539,4 @@ message CompletionResponse {
   repeated string values = 2;
   int64 total_matches = 3;  // Optional.
   bool has_more = 4;        // Optional.
-}
-
-//
-// Cancellation
-//
-
-message CancelTaskRequest {
-  RequestFields common = 1;  // task_id must be populated.
-}
-
-message CancelTaskResponse {
-  ResponseFields common = 1;
 }
