@@ -498,6 +498,8 @@ message CallToolResponse {
   // Clients that support structured output should ignore the content
   // field above if this field is set.
   google.protobuf.Struct structured_content = 3;
+
+  bool is_error = 4;  // Optional.
 }
 
 //
