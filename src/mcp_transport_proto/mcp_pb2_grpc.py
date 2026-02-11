@@ -3,9 +3,9 @@
 import grpc
 import warnings
 
-import mcp_pb2 as mcp__pb2
+import mcp_messages_pb2 as mcp__messages__pb2
 
-GRPC_GENERATED_VERSION = '1.76.0'
+GRPC_GENERATED_VERSION = '1.78.0'
 GRPC_VERSION = grpc.__version__
 _version_not_supported = False
 
@@ -26,7 +26,12 @@ if _version_not_supported:
 
 
 class McpStub(object):
-    """
+    """TODO(roth):
+    - add Tasks support
+    - add anything else that might be missing from the 2025-11-25 spec
+    - add a server-side streaming call for watch-based notifications
+
+
     Resources
 
     """
@@ -39,53 +44,53 @@ class McpStub(object):
         """
         self.ListResources = channel.unary_unary(
                 '/model_context_protocol.Mcp/ListResources',
-                request_serializer=mcp__pb2.ListResourcesRequest.SerializeToString,
-                response_deserializer=mcp__pb2.ListResourcesResponse.FromString,
+                request_serializer=mcp__messages__pb2.ListResourcesRequest.SerializeToString,
+                response_deserializer=mcp__messages__pb2.ListResourcesResponse.FromString,
                 _registered_method=True)
         self.ReadResource = channel.unary_unary(
                 '/model_context_protocol.Mcp/ReadResource',
-                request_serializer=mcp__pb2.ReadResourceRequest.SerializeToString,
-                response_deserializer=mcp__pb2.ReadResourceResponse.FromString,
+                request_serializer=mcp__messages__pb2.ReadResourceRequest.SerializeToString,
+                response_deserializer=mcp__messages__pb2.ReadResourceResponse.FromString,
                 _registered_method=True)
         self.ListResourceTemplates = channel.unary_unary(
                 '/model_context_protocol.Mcp/ListResourceTemplates',
-                request_serializer=mcp__pb2.ListResourceTemplatesRequest.SerializeToString,
-                response_deserializer=mcp__pb2.ListResourceTemplatesResponse.FromString,
+                request_serializer=mcp__messages__pb2.ListResourceTemplatesRequest.SerializeToString,
+                response_deserializer=mcp__messages__pb2.ListResourceTemplatesResponse.FromString,
                 _registered_method=True)
         self.ListPrompts = channel.unary_unary(
                 '/model_context_protocol.Mcp/ListPrompts',
-                request_serializer=mcp__pb2.ListPromptsRequest.SerializeToString,
-                response_deserializer=mcp__pb2.ListPromptsResponse.FromString,
+                request_serializer=mcp__messages__pb2.ListPromptsRequest.SerializeToString,
+                response_deserializer=mcp__messages__pb2.ListPromptsResponse.FromString,
                 _registered_method=True)
         self.GetPrompt = channel.unary_unary(
                 '/model_context_protocol.Mcp/GetPrompt',
-                request_serializer=mcp__pb2.GetPromptRequest.SerializeToString,
-                response_deserializer=mcp__pb2.GetPromptResponse.FromString,
+                request_serializer=mcp__messages__pb2.GetPromptRequest.SerializeToString,
+                response_deserializer=mcp__messages__pb2.GetPromptResponse.FromString,
                 _registered_method=True)
         self.ListTools = channel.unary_unary(
                 '/model_context_protocol.Mcp/ListTools',
-                request_serializer=mcp__pb2.ListToolsRequest.SerializeToString,
-                response_deserializer=mcp__pb2.ListToolsResponse.FromString,
+                request_serializer=mcp__messages__pb2.ListToolsRequest.SerializeToString,
+                response_deserializer=mcp__messages__pb2.ListToolsResponse.FromString,
                 _registered_method=True)
-        self.CallTool = channel.unary_stream(
+        self.CallTool = channel.unary_unary(
                 '/model_context_protocol.Mcp/CallTool',
-                request_serializer=mcp__pb2.CallToolRequest.SerializeToString,
-                response_deserializer=mcp__pb2.CallToolResponse.FromString,
+                request_serializer=mcp__messages__pb2.CallToolRequest.SerializeToString,
+                response_deserializer=mcp__messages__pb2.CallToolResponse.FromString,
                 _registered_method=True)
         self.Complete = channel.unary_unary(
                 '/model_context_protocol.Mcp/Complete',
-                request_serializer=mcp__pb2.CompletionRequest.SerializeToString,
-                response_deserializer=mcp__pb2.CompletionResponse.FromString,
-                _registered_method=True)
-        self.CancelTask = channel.unary_unary(
-                '/model_context_protocol.Mcp/CancelTask',
-                request_serializer=mcp__pb2.CancelTaskRequest.SerializeToString,
-                response_deserializer=mcp__pb2.CancelTaskResponse.FromString,
+                request_serializer=mcp__messages__pb2.CompletionRequest.SerializeToString,
+                response_deserializer=mcp__messages__pb2.CompletionResponse.FromString,
                 _registered_method=True)
 
 
 class McpServicer(object):
-    """
+    """TODO(roth):
+    - add Tasks support
+    - add anything else that might be missing from the 2025-11-25 spec
+    - add a server-side streaming call for watch-based notifications
+
+
     Resources
 
     """
@@ -171,63 +176,48 @@ class McpServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def CancelTask(self, request, context):
-        """
-        Cancellation
-
-
-        """
-        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-        context.set_details('Method not implemented!')
-        raise NotImplementedError('Method not implemented!')
-
 
 def add_McpServicer_to_server(servicer, server):
     rpc_method_handlers = {
             'ListResources': grpc.unary_unary_rpc_method_handler(
                     servicer.ListResources,
-                    request_deserializer=mcp__pb2.ListResourcesRequest.FromString,
-                    response_serializer=mcp__pb2.ListResourcesResponse.SerializeToString,
+                    request_deserializer=mcp__messages__pb2.ListResourcesRequest.FromString,
+                    response_serializer=mcp__messages__pb2.ListResourcesResponse.SerializeToString,
             ),
             'ReadResource': grpc.unary_unary_rpc_method_handler(
                     servicer.ReadResource,
-                    request_deserializer=mcp__pb2.ReadResourceRequest.FromString,
-                    response_serializer=mcp__pb2.ReadResourceResponse.SerializeToString,
+                    request_deserializer=mcp__messages__pb2.ReadResourceRequest.FromString,
+                    response_serializer=mcp__messages__pb2.ReadResourceResponse.SerializeToString,
             ),
             'ListResourceTemplates': grpc.unary_unary_rpc_method_handler(
                     servicer.ListResourceTemplates,
-                    request_deserializer=mcp__pb2.ListResourceTemplatesRequest.FromString,
-                    response_serializer=mcp__pb2.ListResourceTemplatesResponse.SerializeToString,
+                    request_deserializer=mcp__messages__pb2.ListResourceTemplatesRequest.FromString,
+                    response_serializer=mcp__messages__pb2.ListResourceTemplatesResponse.SerializeToString,
             ),
             'ListPrompts': grpc.unary_unary_rpc_method_handler(
                     servicer.ListPrompts,
-                    request_deserializer=mcp__pb2.ListPromptsRequest.FromString,
-                    response_serializer=mcp__pb2.ListPromptsResponse.SerializeToString,
+                    request_deserializer=mcp__messages__pb2.ListPromptsRequest.FromString,
+                    response_serializer=mcp__messages__pb2.ListPromptsResponse.SerializeToString,
             ),
             'GetPrompt': grpc.unary_unary_rpc_method_handler(
                     servicer.GetPrompt,
-                    request_deserializer=mcp__pb2.GetPromptRequest.FromString,
-                    response_serializer=mcp__pb2.GetPromptResponse.SerializeToString,
+                    request_deserializer=mcp__messages__pb2.GetPromptRequest.FromString,
+                    response_serializer=mcp__messages__pb2.GetPromptResponse.SerializeToString,
             ),
             'ListTools': grpc.unary_unary_rpc_method_handler(
                     servicer.ListTools,
-                    request_deserializer=mcp__pb2.ListToolsRequest.FromString,
-                    response_serializer=mcp__pb2.ListToolsResponse.SerializeToString,
+                    request_deserializer=mcp__messages__pb2.ListToolsRequest.FromString,
+                    response_serializer=mcp__messages__pb2.ListToolsResponse.SerializeToString,
             ),
-            'CallTool': grpc.unary_stream_rpc_method_handler(
+            'CallTool': grpc.unary_unary_rpc_method_handler(
                     servicer.CallTool,
-                    request_deserializer=mcp__pb2.CallToolRequest.FromString,
-                    response_serializer=mcp__pb2.CallToolResponse.SerializeToString,
+                    request_deserializer=mcp__messages__pb2.CallToolRequest.FromString,
+                    response_serializer=mcp__messages__pb2.CallToolResponse.SerializeToString,
             ),
             'Complete': grpc.unary_unary_rpc_method_handler(
                     servicer.Complete,
-                    request_deserializer=mcp__pb2.CompletionRequest.FromString,
-                    response_serializer=mcp__pb2.CompletionResponse.SerializeToString,
-            ),
-            'CancelTask': grpc.unary_unary_rpc_method_handler(
-                    servicer.CancelTask,
-                    request_deserializer=mcp__pb2.CancelTaskRequest.FromString,
-                    response_serializer=mcp__pb2.CancelTaskResponse.SerializeToString,
+                    request_deserializer=mcp__messages__pb2.CompletionRequest.FromString,
+                    response_serializer=mcp__messages__pb2.CompletionResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -238,7 +228,12 @@ def add_McpServicer_to_server(servicer, server):
 
  # This class is part of an EXPERIMENTAL API.
 class Mcp(object):
-    """
+    """TODO(roth):
+    - add Tasks support
+    - add anything else that might be missing from the 2025-11-25 spec
+    - add a server-side streaming call for watch-based notifications
+
+
     Resources
 
     """
@@ -258,8 +253,8 @@ class Mcp(object):
             request,
             target,
             '/model_context_protocol.Mcp/ListResources',
-            mcp__pb2.ListResourcesRequest.SerializeToString,
-            mcp__pb2.ListResourcesResponse.FromString,
+            mcp__messages__pb2.ListResourcesRequest.SerializeToString,
+            mcp__messages__pb2.ListResourcesResponse.FromString,
             options,
             channel_credentials,
             insecure,
@@ -285,8 +280,8 @@ class Mcp(object):
             request,
             target,
             '/model_context_protocol.Mcp/ReadResource',
-            mcp__pb2.ReadResourceRequest.SerializeToString,
-            mcp__pb2.ReadResourceResponse.FromString,
+            mcp__messages__pb2.ReadResourceRequest.SerializeToString,
+            mcp__messages__pb2.ReadResourceResponse.FromString,
             options,
             channel_credentials,
             insecure,
@@ -312,8 +307,8 @@ class Mcp(object):
             request,
             target,
             '/model_context_protocol.Mcp/ListResourceTemplates',
-            mcp__pb2.ListResourceTemplatesRequest.SerializeToString,
-            mcp__pb2.ListResourceTemplatesResponse.FromString,
+            mcp__messages__pb2.ListResourceTemplatesRequest.SerializeToString,
+            mcp__messages__pb2.ListResourceTemplatesResponse.FromString,
             options,
             channel_credentials,
             insecure,
@@ -339,8 +334,8 @@ class Mcp(object):
             request,
             target,
             '/model_context_protocol.Mcp/ListPrompts',
-            mcp__pb2.ListPromptsRequest.SerializeToString,
-            mcp__pb2.ListPromptsResponse.FromString,
+            mcp__messages__pb2.ListPromptsRequest.SerializeToString,
+            mcp__messages__pb2.ListPromptsResponse.FromString,
             options,
             channel_credentials,
             insecure,
@@ -366,8 +361,8 @@ class Mcp(object):
             request,
             target,
             '/model_context_protocol.Mcp/GetPrompt',
-            mcp__pb2.GetPromptRequest.SerializeToString,
-            mcp__pb2.GetPromptResponse.FromString,
+            mcp__messages__pb2.GetPromptRequest.SerializeToString,
+            mcp__messages__pb2.GetPromptResponse.FromString,
             options,
             channel_credentials,
             insecure,
@@ -393,8 +388,8 @@ class Mcp(object):
             request,
             target,
             '/model_context_protocol.Mcp/ListTools',
-            mcp__pb2.ListToolsRequest.SerializeToString,
-            mcp__pb2.ListToolsResponse.FromString,
+            mcp__messages__pb2.ListToolsRequest.SerializeToString,
+            mcp__messages__pb2.ListToolsResponse.FromString,
             options,
             channel_credentials,
             insecure,
@@ -416,12 +411,12 @@ class Mcp(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_stream(
+        return grpc.experimental.unary_unary(
             request,
             target,
             '/model_context_protocol.Mcp/CallTool',
-            mcp__pb2.CallToolRequest.SerializeToString,
-            mcp__pb2.CallToolResponse.FromString,
+            mcp__messages__pb2.CallToolRequest.SerializeToString,
+            mcp__messages__pb2.CallToolResponse.FromString,
             options,
             channel_credentials,
             insecure,
@@ -447,35 +442,8 @@ class Mcp(object):
             request,
             target,
             '/model_context_protocol.Mcp/Complete',
-            mcp__pb2.CompletionRequest.SerializeToString,
-            mcp__pb2.CompletionResponse.FromString,
-            options,
-            channel_credentials,
-            insecure,
-            call_credentials,
-            compression,
-            wait_for_ready,
-            timeout,
-            metadata,
-            _registered_method=True)
-
-    @staticmethod
-    def CancelTask(request,
-            target,
-            options=(),
-            channel_credentials=None,
-            call_credentials=None,
-            insecure=False,
-            compression=None,
-            wait_for_ready=None,
-            timeout=None,
-            metadata=None):
-        return grpc.experimental.unary_unary(
-            request,
-            target,
-            '/model_context_protocol.Mcp/CancelTask',
-            mcp__pb2.CancelTaskRequest.SerializeToString,
-            mcp__pb2.CancelTaskResponse.FromString,
+            mcp__messages__pb2.CompletionRequest.SerializeToString,
+            mcp__messages__pb2.CompletionResponse.FromString,
             options,
             channel_credentials,
             insecure,
