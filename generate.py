@@ -2,6 +2,7 @@ import os
 from pathlib import Path
 import sys
 import shutil
+import re
 from grpc_tools import protoc
 
 
@@ -15,9 +16,11 @@ def generate_protos():
 
     proto_path = Path(proto_dir)
     suffix = ".proto"
+    proto_files = list(proto_path.glob(f"*{suffix}"))
+    proto_names = [f.stem for f in proto_files]
 
-    for file_path in proto_path.glob(f"*{suffix}"):
-        proto_file = os.path.join(proto_dir, file_path)
+    for file_path in proto_files:
+        proto_file = os.path.join(proto_dir, file_path.name)
 
         print(f"Generating protos from {proto_file} into {out_dir}...")
 
@@ -25,8 +28,6 @@ def generate_protos():
         # We also include the project root just in case.
 
         # Including the grpc_tools _proto directory is required to find well-known types
-        # like google/protobuf/struct.proto, timestamp.proto, etc.
-        # See: https://github.com/grpc/grpc/issues/15918
         grpc_tools_include = os.path.join(os.path.dirname(protoc.__file__), "_proto")
 
         # protoc command arguments
@@ -52,12 +53,32 @@ def generate_protos():
 
         print("Success!\n")
 
-        # Fix imports in generated files to be relative or absolute to the package?
-        # Protobuf 3 python generation usually generates imports like `import mcp_pb2 as ...`
-        # If mcp_pb2 is in the same directory, it works if the directory is in path, or via relative import fix.
-        # However, since we are generating into the package, `import mcp_pb2` might fail if we import from outside.
-        # But here we only have one proto file, so it shouldn't import other local protos.
-        # It imports `google.protobuf...` which is fine.
+
+    # Fix imports in generated files to be relative to the package root
+    # to avoid import errors.
+    print("Fixing imports in generated files...")
+    patterns = ["*.py", "*.pyi"]
+    for pattern in patterns:
+        for py_file in Path(out_dir).glob(pattern):
+            if not (py_file.name.endswith("_pb2.py") or py_file.name.endswith("_pb2_grpc.py") or py_file.name.endswith("_pb2.pyi")):
+                continue
+
+            content = py_file.read_text()
+            original_content = content
+
+            for name in proto_names:
+                # Pattern to match 'import name_pb2' and 'import name_pb2_grpc'
+                # We want to catch 'import name_pb2 as ...' or just 'import name_pb2'
+                pattern = rf"^import ({name}_pb2(_grpc)?)\b"
+                replacement = rf"from mcp_transport_proto import \1"
+                content = re.sub(pattern, replacement, content, flags=re.MULTILINE)
+
+            if len(content) != len(original_content):
+                print(f"  Fixed imports in {py_file.name}")
+                py_file.write_text(content)
+
+    print("All done!\n")
+
 
 if __name__ == "__main__":
     generate_protos()
