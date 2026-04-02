@@ -8,7 +8,7 @@ version = "0.1.0"
 description = "Generated gRPC protobufs for MCP"
 readme = "README.md"
 authors = [
-  { name = "Google", email = "no-reply@google.com" },
+  { name = "The MCP-gRPC Authors", email = "grpc-packages@google.com" },
 ]
 classifiers = [
     "Programming Language :: Python :: 3",
@@ -17,8 +17,8 @@ classifiers = [
 ]
 requires-python = ">=3.9"
 dependencies = [
-    "protobuf>=5.26.1",
-    "grpcio>=1.63.0"
+    "grpcio>=1.71.0",
+    "protobuf>=5.26.1"
 ]
 
 [project.urls]
@@ -30,5 +30,5 @@ where = ["src"]
 
 [dependency-groups]
 dev = [
-    "grpcio-tools>=1.76.0",
+    "grpcio-tools>=1.71.0",
 ]
