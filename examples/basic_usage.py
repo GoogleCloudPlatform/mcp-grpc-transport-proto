@@ -1,4 +1,4 @@
-from mcp_transport_proto import mcp_pb2, mcp_messages_pb2
+from mcp_grpc_transport_proto import mcp_pb2, mcp_messages_pb2
 from google.protobuf import struct_pb2
 
 def main():
