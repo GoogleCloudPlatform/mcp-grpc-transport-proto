@@ -1,13 +1,10 @@
-import datetime
-
 from google.protobuf import duration_pb2 as _duration_pb2
 from google.protobuf import struct_pb2 as _struct_pb2
 from google.protobuf.internal import containers as _containers
 from google.protobuf.internal import enum_type_wrapper as _enum_type_wrapper
 from google.protobuf import descriptor as _descriptor
 from google.protobuf import message as _message
-from collections.abc import Iterable as _Iterable, Mapping as _Mapping
-from typing import ClassVar as _ClassVar, Optional as _Optional, Union as _Union
+from typing import ClassVar as _ClassVar, Iterable as _Iterable, Mapping as _Mapping, Optional as _Optional, Union as _Union
 
 DESCRIPTOR: _descriptor.FileDescriptor
 
@@ -339,7 +336,7 @@ class ListResourcesResponse(_message.Message):
     common: ResponseFields
     resources: _containers.RepeatedCompositeFieldContainer[Resource]
     ttl: _duration_pb2.Duration
-    def __init__(self, common: _Optional[_Union[ResponseFields, _Mapping]] = ..., resources: _Optional[_Iterable[_Union[Resource, _Mapping]]] = ..., ttl: _Optional[_Union[datetime.timedelta, _duration_pb2.Duration, _Mapping]] = ...) -> None: ...
+    def __init__(self, common: _Optional[_Union[ResponseFields, _Mapping]] = ..., resources: _Optional[_Iterable[_Union[Resource, _Mapping]]] = ..., ttl: _Optional[_Union[_duration_pb2.Duration, _Mapping]] = ...) -> None: ...
 
 class ResourceContents(_message.Message):
     __slots__ = ("uri", "mime_type", "text", "blob")
@@ -399,7 +396,7 @@ class ListResourceTemplatesResponse(_message.Message):
     common: ResponseFields
     resource_templates: _containers.RepeatedCompositeFieldContainer[ResourceTemplate]
     ttl: _duration_pb2.Duration
-    def __init__(self, common: _Optional[_Union[ResponseFields, _Mapping]] = ..., resource_templates: _Optional[_Iterable[_Union[ResourceTemplate, _Mapping]]] = ..., ttl: _Optional[_Union[datetime.timedelta, _duration_pb2.Duration, _Mapping]] = ...) -> None: ...
+    def __init__(self, common: _Optional[_Union[ResponseFields, _Mapping]] = ..., resource_templates: _Optional[_Iterable[_Union[ResourceTemplate, _Mapping]]] = ..., ttl: _Optional[_Union[_duration_pb2.Duration, _Mapping]] = ...) -> None: ...
 
 class Prompt(_message.Message):
     __slots__ = ("name", "title", "description", "arguments")
@@ -438,7 +435,7 @@ class ListPromptsResponse(_message.Message):
     common: ResponseFields
     prompts: _containers.RepeatedCompositeFieldContainer[Prompt]
     ttl: _duration_pb2.Duration
-    def __init__(self, common: _Optional[_Union[ResponseFields, _Mapping]] = ..., prompts: _Optional[_Iterable[_Union[Prompt, _Mapping]]] = ..., ttl: _Optional[_Union[datetime.timedelta, _duration_pb2.Duration, _Mapping]] = ...) -> None: ...
+    def __init__(self, common: _Optional[_Union[ResponseFields, _Mapping]] = ..., prompts: _Optional[_Iterable[_Union[Prompt, _Mapping]]] = ..., ttl: _Optional[_Union[_duration_pb2.Duration, _Mapping]] = ...) -> None: ...
 
 class EmbeddedResource(_message.Message):
     __slots__ = ("contents", "annotations")
@@ -535,7 +532,7 @@ class ListToolsResponse(_message.Message):
     common: ResponseFields
     tools: _containers.RepeatedCompositeFieldContainer[Tool]
     ttl: _duration_pb2.Duration
-    def __init__(self, common: _Optional[_Union[ResponseFields, _Mapping]] = ..., tools: _Optional[_Iterable[_Union[Tool, _Mapping]]] = ..., ttl: _Optional[_Union[datetime.timedelta, _duration_pb2.Duration, _Mapping]] = ...) -> None: ...
+    def __init__(self, common: _Optional[_Union[ResponseFields, _Mapping]] = ..., tools: _Optional[_Iterable[_Union[Tool, _Mapping]]] = ..., ttl: _Optional[_Union[_duration_pb2.Duration, _Mapping]] = ...) -> None: ...
 
 class CallToolRequest(_message.Message):
     __slots__ = ("common", "request")

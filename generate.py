@@ -9,7 +9,7 @@ from grpc_tools import protoc
 def generate_protos():
     project_root = os.path.dirname(os.path.abspath(__file__))
     proto_dir = os.path.join(project_root, "proto")
-    out_dir = os.path.join(project_root, "src/mcp_transport_proto")
+    out_dir = os.path.join(project_root, "src/mcp_grpc_transport_proto")
 
     if not os.path.exists(out_dir):
         os.makedirs(out_dir)
@@ -70,7 +70,7 @@ def generate_protos():
                 # Pattern to match 'import name_pb2' and 'import name_pb2_grpc'
                 # We want to catch 'import name_pb2 as ...' or just 'import name_pb2'
                 pattern = rf"^import ({name}_pb2(_grpc)?)\b"
-                replacement = rf"from mcp_transport_proto import \1"
+                replacement = rf"from mcp_grpc_transport_proto import \1"
                 content = re.sub(pattern, replacement, content, flags=re.MULTILINE)
 
             if len(content) != len(original_content):
