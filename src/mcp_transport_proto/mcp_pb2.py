@@ -25,14 +25,14 @@ _sym_db = _symbol_database.Default()
 from mcp_transport_proto import mcp_messages_pb2 as mcp__messages__pb2
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\tmcp.proto\x12\x16model_context_protocol\x1a\x12mcp_messages.proto2\xd3\x06\n\x03Mcp\x12l\n\rListResources\x12,.model_context_protocol.ListResourcesRequest\x1a-.model_context_protocol.ListResourcesResponse\x12i\n\x0cReadResource\x12+.model_context_protocol.ReadResourceRequest\x1a,.model_context_protocol.ReadResourceResponse\x12\x84\x01\n\x15ListResourceTemplates\x12\x34.model_context_protocol.ListResourceTemplatesRequest\x1a\x35.model_context_protocol.ListResourceTemplatesResponse\x12\x66\n\x0bListPrompts\x12*.model_context_protocol.ListPromptsRequest\x1a+.model_context_protocol.ListPromptsResponse\x12`\n\tGetPrompt\x12(.model_context_protocol.GetPromptRequest\x1a).model_context_protocol.GetPromptResponse\x12`\n\tListTools\x12(.model_context_protocol.ListToolsRequest\x1a).model_context_protocol.ListToolsResponse\x12]\n\x08\x43\x61llTool\x12\'.model_context_protocol.CallToolRequest\x1a(.model_context_protocol.CallToolResponse\x12\x61\n\x08\x43omplete\x12).model_context_protocol.CompletionRequest\x1a*.model_context_protocol.CompletionResponseB\x0c\x42\x08McpProtoP\x01\x62\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\tmcp.proto\x12\x16model_context_protocol\x1a\x12mcp_messages.proto2\xd3\x06\n\x03Mcp\x12l\n\rListResources\x12,.model_context_protocol.ListResourcesRequest\x1a-.model_context_protocol.ListResourcesResponse\x12i\n\x0cReadResource\x12+.model_context_protocol.ReadResourceRequest\x1a,.model_context_protocol.ReadResourceResponse\x12\x84\x01\n\x15ListResourceTemplates\x12\x34.model_context_protocol.ListResourceTemplatesRequest\x1a\x35.model_context_protocol.ListResourceTemplatesResponse\x12\x66\n\x0bListPrompts\x12*.model_context_protocol.ListPromptsRequest\x1a+.model_context_protocol.ListPromptsResponse\x12`\n\tGetPrompt\x12(.model_context_protocol.GetPromptRequest\x1a).model_context_protocol.GetPromptResponse\x12`\n\tListTools\x12(.model_context_protocol.ListToolsRequest\x1a).model_context_protocol.ListToolsResponse\x12]\n\x08\x43\x61llTool\x12\'.model_context_protocol.CallToolRequest\x1a(.model_context_protocol.CallToolResponse\x12\x61\n\x08\x43omplete\x12).model_context_protocol.CompletionRequest\x1a*.model_context_protocol.CompletionResponseB\x1c\n\x0e\x63om.google.mcpB\x08McpProtoP\x01\x62\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
 _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'mcp_pb2', _globals)
 if not _descriptor._USE_C_DESCRIPTORS:
   _globals['DESCRIPTOR']._loaded_options = None
-  _globals['DESCRIPTOR']._serialized_options = b'B\010McpProtoP\001'
+  _globals['DESCRIPTOR']._serialized_options = b'\n\016com.google.mcpB\010McpProtoP\001'
   _globals['_MCP']._serialized_start=58
   _globals['_MCP']._serialized_end=909
 # @@protoc_insertion_point(module_scope)
