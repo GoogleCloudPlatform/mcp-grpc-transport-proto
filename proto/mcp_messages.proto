@@ -24,7 +24,7 @@ enum ProtocolVersion {
 }
 
 // Requests sent from the server to the client.
-message ServerInitiatedRequest {
+message InputRequest {
   // Exactly one of these fields must be populated.
   // (Not using "oneof", since that causes forward-compatibility problems.)
 
@@ -42,8 +42,8 @@ message ServerInitiatedRequest {
   ElicitRequest elicit_request = 11;
 }
 
-// Responses to server-initiated requests.
-message ServerInitiatedResponse {
+// Responses to input requests.
+message InputResponse {
   // Exactly one of these fields must be populated.
   // (Not using "oneof", since that causes forward-compatibility problems.)
 
@@ -72,10 +72,10 @@ enum ResultType {
   // content.
   RESULT_TYPE_COMPLETE = 1;
   // The request requires additional input before it can be completed.  The
-  // response carries dependent_requests and/or request_state (via
+  // response carries input_requests and/or request_state (via
   // ResponseFields) that the client must satisfy before retrying.  Note that
   // an input-required result may carry request_state only (with no
-  // dependent_requests).
+  // input_requests).
   RESULT_TYPE_INPUT_REQUIRED = 2;
 }
 
@@ -96,8 +96,8 @@ message RequestFields {
   // Escape hatch for arbitrary side-channel data.
   google.protobuf.Struct metadata = 1;
 
-  // Responses to server-initiated requests.
-  map<string, ServerInitiatedResponse> dependent_responses = 6;
+  // Responses to server-initiated input requests.
+  map<string, InputResponse> input_responses = 6;
 
   // State that the server gave us to echo back in subsequent RPCs for the
   // same peristant request.
@@ -115,11 +115,11 @@ message ResponseFields {
   // Escape hatch for arbitrary side-channel data.
   google.protobuf.Struct metadata = 2;
 
-  // Dependent requests.  The presence of this field tells the client
+  // Input requests.  The presence of this field tells the client
   // that the request is incomplete and that the client must try its
-  // request again with the result of these dependent requests in the
-  // dependent_responses field.
-  map<string, ServerInitiatedRequest> dependent_requests = 7;
+  // request again with the result of these input requests in the
+  // input_responses field.
+  map<string, InputRequest> input_requests = 7;
 
   // State for the client to echo back in subsequent RPCs for the
   // same peristant request.
