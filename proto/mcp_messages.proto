@@ -1,6 +1,7 @@
+// LINT: LEGACY_NAMES
 // MCP protocol schema based on the MCP specification:
-// https://modelcontextprotocol.io/specification/2025-06-18/
-// Last Updated on: 2026-02-05
+// https://modelcontextprotocol.io/specification/2026-07-28/
+// Last Updated on: 2026-07-21
 
 syntax = "proto3";
 
@@ -17,44 +18,77 @@ enum ProtocolVersion {
   VERSION_UNKNOWN = 0;
   VERSION_20250326 = 1;
   VERSION_20250618 = 2;
+  VERSION_20251125 = 3;
+  VERSION_20260728 = 4;
   // More values can be added as needed.
 }
 
 // Requests sent from the server to the client.
-message ServerInitiatedRequest {
+message InputRequest {
   // Exactly one of these fields must be populated.
   // (Not using "oneof", since that causes forward-compatibility problems.)
 
   // Sampling, as per
   // https://modelcontextprotocol.io/specification/2025-03-26/client/sampling.
-  SamplingCreateMessageRequest sampling_create_message = 8;
+  SamplingCreateMessageRequest sampling_create_message = 8 [deprecated = true];
 
   // Root list request, as per
   // https://modelcontextprotocol.io/specification/2025-03-26/client/roots.
-  ListRootsRequest list_roots_request = 9;
-  bool notify_on_root_list_update = 10;
+  ListRootsRequest list_roots_request = 9 [deprecated = true];
+  bool notify_on_root_list_update = 10 [deprecated = true];
 
   // Elicitations, as per
   // https://modelcontextprotocol.io/specification/2025-06-18/client/elicitation.
   ElicitRequest elicit_request = 11;
 }
 
-// Responses to server-initiated requests.
-message ServerInitiatedResponse {
+// Responses to input requests.
+message InputResponse {
   // Exactly one of these fields must be populated.
   // (Not using "oneof", since that causes forward-compatibility problems.)
 
   // Sampling, as per
   // https://modelcontextprotocol.io/specification/2025-03-26/client/sampling.
-  SamplingCreateMessageResult sampling_create_message_result = 7;
+  SamplingCreateMessageResult sampling_create_message_result = 7
+      [deprecated = true];
 
   // Root list response, as per
   // https://modelcontextprotocol.io/specification/2025-03-26/client/roots.
-  ListRootsResult root_list_result = 8;
+  ListRootsResult root_list_result = 8 [deprecated = true];
 
   // Elicitation response, as per
   // https://modelcontextprotocol.io/specification/2025-06-18/client/elicitation.
   ElicitResult elicit_result = 9;
+}
+
+// Indicates the type of a result, allowing the client to determine how to
+// parse the response.  Every response carries this via ResponseFields.
+enum ResultType {
+  // The field was not set.  For backward compatibility with servers that
+  // predate this field, an unset value MUST be treated as
+  // RESULT_TYPE_COMPLETE.
+  RESULT_TYPE_UNSPECIFIED = 0;
+  // The request completed successfully and the result contains the final
+  // content.
+  RESULT_TYPE_COMPLETE = 1;
+  // The request requires additional input before it can be completed.  The
+  // response carries input_requests and/or request_state (via
+  // ResponseFields) that the client must satisfy before retrying.  Note that
+  // an input-required result may carry request_state only (with no
+  // input_requests).
+  RESULT_TYPE_INPUT_REQUIRED = 2;
+}
+
+// The intended scope of a cacheable response, analogous to HTTP
+// `Cache-Control: public` vs `Cache-Control: private`.
+enum CacheScope {
+  CACHE_SCOPE_UNSPECIFIED = 0;
+  // The response does not contain context-specific data.  Any client or
+  // intermediary may cache and reuse it across authorization contexts.
+  CACHE_SCOPE_PUBLIC = 1;
+  // The response may be cached and reused only within the same authorization
+  // context.  Caches must not be shared across authorization contexts.
+  CACHE_SCOPE_PRIVATE = 2;
 }
 
 // Common fields used in all requests from client to server.
@@ -62,12 +96,15 @@ message RequestFields {
   // Escape hatch for arbitrary side-channel data.
   google.protobuf.Struct metadata = 1;
 
-  // Responses to server-initiated requests.
-  map<string, ServerInitiatedResponse> dependent_responses = 6;
+  // Responses to server-initiated input requests.
+  map<string, InputResponse> input_responses = 6;
 
   // State that the server gave us to echo back in subsequent RPCs for the
   // same peristant request.
-  google.protobuf.Struct resume_data = 7;
+  google.protobuf.Struct resume_data = 7 [deprecated = true];
+
+  // Request state passed back to the server from the client.
+  optional string request_state = 8;
 }
 
 // Common fields used in all responses from server to client.
@@ -78,15 +115,25 @@ message ResponseFields {
   // Escape hatch for arbitrary side-channel data.
   google.protobuf.Struct metadata = 2;
 
-  // Dependent requests.  The presence of this field tells the client
+  // Input requests.  The presence of this field tells the client
   // that the request is incomplete and that the client must try its
-  // request again with the result of these dependent requests in the
-  // dependent_responses field.
-  map<string, ServerInitiatedRequest> dependent_requests = 7;
+  // request again with the result of these input requests in the
+  // input_responses field.
+  map<string, InputRequest> input_requests = 7;
 
   // State for the client to echo back in subsequent RPCs for the
   // same peristant request.
-  google.protobuf.Struct resume_data = 8;
+  google.protobuf.Struct resume_data = 8 [deprecated = true];
+
+  // Indicates whether this result is final (RESULT_TYPE_COMPLETE) or requires
+  // another round trip (RESULT_TYPE_INPUT_REQUIRED).  An unset value MUST be
+  // interpreted as RESULT_TYPE_COMPLETE.
+  ResultType result_type = 9;
+
+  // Request state to be passed back to the server when the client retries the
+  // original request. The client must treat this as an opaque blob; it must not
+  // interpret it in any way.
+  optional string request_state = 10;
 }
 
 enum Role {
@@ -98,6 +145,30 @@ enum Role {
 message Annotations {
   repeated Role audience = 1;
   optional float priority = 2;  // Must be in range [0,1].
+  // Timestamp when the resource was last modified, as an ISO 8601 string.
+  optional string last_modified = 3;
+}
+
+// An icon that a client may render for a tool, resource, prompt, etc.
+message Icon {
+  // A URI pointing to an icon resource.
+  string src = 1;
+
+  // Optional MIME type override if the source MIME type is missing or
+  // generic (e.g. "image/png", "image/svg+xml").
+  string mime_type = 2;  // Optional.
+
+  // Sizes at which the icon can be used, each in WxH format (e.g. "48x48")
+  // or "any" for scalable formats.  Optional.
+  repeated string sizes = 3;
+
+  // The theme this icon is designed for.  Optional.
+  enum Theme {
+    THEME_UNSPECIFIED = 0;
+    THEME_LIGHT = 1;
+    THEME_DARK = 2;
+  }
+  Theme theme = 4;
 }
 
 message TextContent {
@@ -186,6 +257,8 @@ message PrimitiveSchemaDefinition {
     optional uint64 min_length = 3;
     optional uint64 max_length = 4;
     Format format = 5;
+    // Optional default value for string inputs.
+    optional string default_value = 6;
   }
 
   message NumberSchema {
@@ -204,6 +277,10 @@ message PrimitiveSchemaDefinition {
     // Only one of these fields must be set.
     DoubleRange double_range = 5;
     IntegerRange integer_range = 6;
+    // Optional default double value for numeric inputs.
+    optional double default_number = 7;
+    // Optional default integer value for numeric inputs.
+    optional int64 default_integer = 8;
   }
 
   message BooleanSchema {
@@ -244,6 +321,13 @@ message ElicitRequest {
   string message = 1;  // Message to present to user.  Required.
   map<string, PrimitiveSchemaDefinition> requested_schema = 2;
   repeated string required_fields = 3;
+
+  message UrlMode {
+    string id = 1;
+    string url = 2;
+  }
+  // If unset treat as FORM mode.
+  UrlMode url_mode = 4;
 }
 
 message ElicitResult {
@@ -270,6 +354,7 @@ message Resource {
   string mime_type = 4;         // Optional.
   Annotations annotations = 5;  // Optional.
   uint64 size = 6;              // Optional.
+  repeated Icon icons = 8;      // Optional.
 }
 
 message ListResourcesRequest {
@@ -281,6 +366,7 @@ message ListResourcesResponse {
 
   repeated Resource resources = 2;
   google.protobuf.Duration ttl = 3;
+  CacheScope cache_scope = 4;
 }
 
 //
@@ -306,6 +392,8 @@ message ReadResourceRequest {
 message ReadResourceResponse {
   ResponseFields common = 1;
   repeated ResourceContents resource = 2;
+  google.protobuf.Duration ttl = 3;
+  CacheScope cache_scope = 4;
 }
 
 //
@@ -320,6 +408,7 @@ message ResourceTemplate {
   string description = 3;       // Optional.
   string mime_type = 4;         // Optional.
   Annotations annotations = 5;  // Optional.
+  repeated Icon icons = 7;      // Optional.
 }
 
 message ListResourceTemplatesRequest {
@@ -330,6 +419,7 @@ message ListResourceTemplatesResponse {
   ResponseFields common = 1;
   repeated ResourceTemplate resource_templates = 2;
   google.protobuf.Duration ttl = 3;
+  CacheScope cache_scope = 4;
 }
 
 //
@@ -349,6 +439,7 @@ message Prompt {
   string title = 4;
   string description = 2;           // Optional.
   repeated Argument arguments = 3;  // Optional.
+  repeated Icon icons = 5;          // Optional.
 }
 
 message ListPromptsRequest {
@@ -359,6 +450,7 @@ message ListPromptsResponse {
   ResponseFields common = 1;
   repeated Prompt prompts = 2;
   google.protobuf.Duration ttl = 3;
+  CacheScope cache_scope = 4;
 }
 
 //
@@ -414,6 +506,7 @@ message Tool {
   google.protobuf.Struct input_schema = 3;
   google.protobuf.Struct output_schema = 5;  // Optional.
   ToolAnnotations annotations = 4;           // Optional.
+  repeated Icon icons = 7;                   // Optional.
 }
 
 message ListToolsRequest {
@@ -424,6 +517,7 @@ message ListToolsResponse {
   ResponseFields common = 1;
   repeated Tool tools = 2;
   google.protobuf.Duration ttl = 3;
+  CacheScope cache_scope = 4;
 }
 
 //

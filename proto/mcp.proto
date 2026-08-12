@@ -1,6 +1,6 @@
 // MCP protocol schema based on the MCP specification:
-// https://modelcontextprotocol.io/specification/2025-06-18/
-// Last Updated on: 2026-02-05
+// https://modelcontextprotocol.io/specification/2026-07-28/
+// Last Updated on: 2026-07-20
 
 syntax = "proto3";
 
@@ -14,7 +14,8 @@ option java_package = "com.google.mcp";
 
 // TODO(roth):
 // - add Tasks support
-// - add anything else that might be missing from the 2025-11-25 spec
+// - add Discovery and Capabilities
+// - add anything else that might be missing from the 2026-07-28 spec
 // - add a server-side streaming call for watch-based notifications
 
 service Mcp {
