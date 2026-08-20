@@ -5,7 +5,7 @@ import warnings
 
 from mcp_grpc_transport_proto import mcp_messages_pb2 as mcp__messages__pb2
 
-GRPC_GENERATED_VERSION = '1.71.0'
+GRPC_GENERATED_VERSION = '1.83.0'
 GRPC_VERSION = grpc.__version__
 _version_not_supported = False
 
@@ -18,17 +18,18 @@ except ImportError:
 if _version_not_supported:
     raise RuntimeError(
         f'The grpc package installed is at version {GRPC_VERSION},'
-        + f' but the generated code in mcp_pb2_grpc.py depends on'
+        + ' but the generated code in mcp_pb2_grpc.py depends on'
         + f' grpcio>={GRPC_GENERATED_VERSION}.'
         + f' Please upgrade your grpc module to grpcio>={GRPC_GENERATED_VERSION}'
         + f' or downgrade your generated code using grpcio-tools<={GRPC_VERSION}.'
     )
 
 
-class McpStub(object):
+class McpStub:
     """TODO(roth):
     - add Tasks support
-    - add anything else that might be missing from the 2025-11-25 spec
+    - add Discovery and Capabilities
+    - add anything else that might be missing from the 2026-07-28 spec
     - add a server-side streaming call for watch-based notifications
 
 
@@ -84,10 +85,11 @@ class McpStub(object):
                 _registered_method=True)
 
 
-class McpServicer(object):
+class McpServicer:
     """TODO(roth):
     - add Tasks support
-    - add anything else that might be missing from the 2025-11-25 spec
+    - add Discovery and Capabilities
+    - add anything else that might be missing from the 2026-07-28 spec
     - add a server-side streaming call for watch-based notifications
 
 
@@ -227,10 +229,11 @@ def add_McpServicer_to_server(servicer, server):
 
 
  # This class is part of an EXPERIMENTAL API.
-class Mcp(object):
+class Mcp:
     """TODO(roth):
     - add Tasks support
-    - add anything else that might be missing from the 2025-11-25 spec
+    - add Discovery and Capabilities
+    - add anything else that might be missing from the 2026-07-28 spec
     - add a server-side streaming call for watch-based notifications
 
 
