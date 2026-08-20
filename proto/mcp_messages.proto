@@ -173,19 +173,22 @@ message Icon {
 
 message TextContent {
   string text = 1;
-  Annotations annotations = 2;  // Optional.
+  Annotations annotations = 2;          // Optional.
+  google.protobuf.Struct metadata = 3;  // Optional.
 }
 
 message ImageContent {
   bytes data = 1;
   string mime_type = 2;
-  Annotations annotations = 3;  // Optional.
+  Annotations annotations = 3;          // Optional.
+  google.protobuf.Struct metadata = 4;  // Optional.
 }
 
 message AudioContent {
   bytes data = 1;
   string mime_type = 2;
-  Annotations annotations = 3;  // Optional.
+  Annotations annotations = 3;          // Optional.
+  google.protobuf.Struct metadata = 4;  // Optional.
 }
 
 message ListRootsRequest {}
@@ -350,11 +353,12 @@ message Resource {
   string uri = 1;
   string name = 2;
   string title = 7;
-  string description = 3;       // Optional.
-  string mime_type = 4;         // Optional.
-  Annotations annotations = 5;  // Optional.
-  uint64 size = 6;              // Optional.
-  repeated Icon icons = 8;      // Optional.
+  string description = 3;               // Optional.
+  string mime_type = 4;                 // Optional.
+  Annotations annotations = 5;          // Optional.
+  uint64 size = 6;                      // Optional.
+  repeated Icon icons = 8;              // Optional.
+  google.protobuf.Struct metadata = 9;  // Optional.
 }
 
 message ListResourcesRequest {
@@ -382,6 +386,7 @@ message ResourceContents {
   // (Not using "oneof", since that causes forward-compatibility problems.)
   string text = 3;
   bytes blob = 4;
+  google.protobuf.Struct metadata = 5;  // Optional.
 }
 
 message ReadResourceRequest {
@@ -405,10 +410,11 @@ message ResourceTemplate {
   string uri_template = 1;
   string name = 2;
   string title = 6;
-  string description = 3;       // Optional.
-  string mime_type = 4;         // Optional.
-  Annotations annotations = 5;  // Optional.
-  repeated Icon icons = 7;      // Optional.
+  string description = 3;               // Optional.
+  string mime_type = 4;                 // Optional.
+  Annotations annotations = 5;          // Optional.
+  repeated Icon icons = 7;              // Optional.
+  google.protobuf.Struct metadata = 8;  // Optional.
 }
 
 message ListResourceTemplatesRequest {
@@ -437,9 +443,10 @@ message Prompt {
 
   string name = 1;
   string title = 4;
-  string description = 2;           // Optional.
-  repeated Argument arguments = 3;  // Optional.
-  repeated Icon icons = 5;          // Optional.
+  string description = 2;               // Optional.
+  repeated Argument arguments = 3;      // Optional.
+  repeated Icon icons = 5;              // Optional.
+  google.protobuf.Struct metadata = 6;  // Optional.
 }
 
 message ListPromptsRequest {
@@ -459,7 +466,8 @@ message ListPromptsResponse {
 
 message EmbeddedResource {
   ResourceContents contents = 1;
-  Annotations annotations = 2;  // Optional.
+  Annotations annotations = 2;          // Optional.
+  google.protobuf.Struct metadata = 3;  // Optional.
 }
 
 message PromptMessage {
@@ -507,6 +515,7 @@ message Tool {
   google.protobuf.Struct output_schema = 5;  // Optional.
   ToolAnnotations annotations = 4;           // Optional.
   repeated Icon icons = 7;                   // Optional.
+  google.protobuf.Struct metadata = 8;       // Optional.
 }
 
 message ListToolsRequest {
