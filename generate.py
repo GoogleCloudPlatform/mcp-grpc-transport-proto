@@ -1,22 +1,36 @@
 import os
 from pathlib import Path
 import sys
-import shutil
 import re
-from grpc_tools import protoc
+
+
+class ProtoGenerationError(RuntimeError):
+    """Raised when protobuf/gRPC code generation fails."""
 
 
 def generate_protos():
+    try:
+        from grpc_tools import protoc
+    except ImportError as e:
+        raise ProtoGenerationError(
+            "grpc_tools is required to generate protobuf/gRPC code but is not installed.\n"
+            "Install it with `uv sync` (development) or `pip install grpcio-tools`."
+        ) from e
+
     project_root = os.path.dirname(os.path.abspath(__file__))
     proto_dir = os.path.join(project_root, "proto")
     out_dir = os.path.join(project_root, "src/mcp_grpc_transport_proto")
 
-    if not os.path.exists(out_dir):
-        os.makedirs(out_dir)
+    if not os.path.isdir(proto_dir):
+        raise ProtoGenerationError(f"Proto source directory not found: {proto_dir}")
+
+    os.makedirs(out_dir, exist_ok=True)
 
     proto_path = Path(proto_dir)
-    suffix = ".proto"
-    proto_files = list(proto_path.glob(f"*{suffix}"))
+    proto_files = sorted(proto_path.glob("*.proto"))
+    if not proto_files:
+        raise ProtoGenerationError(f"No .proto files found in {proto_dir}; nothing to generate.")
+
     proto_names = [f.stem for f in proto_files]
 
     for file_path in proto_files:
@@ -48,11 +62,26 @@ def generate_protos():
         exit_code = protoc.main(protoc_args)
 
         if exit_code != 0:
-            print("Failed to generate protos.")
-            sys.exit(exit_code)
+            raise ProtoGenerationError(
+                f"protoc failed with exit code {exit_code} while compiling {file_path.name}"
+            )
 
         print("Success!\n")
 
+    # Sanity check: protoc can report success (exit code 0) while still not
+    # writing every expected output file, e.g. if out_dir isn't writable in
+    # the way protoc expects. Fail loudly instead of shipping a partial package.
+    expected_suffixes = ("_pb2.py", "_pb2_grpc.py", "_pb2.pyi")
+    missing = [
+        f"{name}{suffix}"
+        for name in proto_names
+        for suffix in expected_suffixes
+        if not (Path(out_dir) / f"{name}{suffix}").exists()
+    ]
+    if missing:
+        raise ProtoGenerationError(
+            "protoc reported success but expected output files are missing: " + ", ".join(missing)
+        )
 
     # Fix imports in generated files to be relative to the package root
     # to avoid import errors.
@@ -81,4 +110,8 @@ def generate_protos():
 
 
 if __name__ == "__main__":
-    generate_protos()
+    try:
+        generate_protos()
+    except ProtoGenerationError as e:
+        print(f"error: {e}", file=sys.stderr)
+        sys.exit(1)
