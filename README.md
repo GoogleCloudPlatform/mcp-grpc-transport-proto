@@ -2,7 +2,7 @@
 
 This repository contains the Protocol Buffer definitions (`.proto`) and generated Python bindings for implementing the [Model Context Protocol (MCP)](https://modelcontextprotocol.io/) over gRPC.
 
-The definitions are currently in sync with the MCP schema version [2025-11-25](https://github.com/modelcontextprotocol/modelcontextprotocol/tree/main/schema/2025-11-25).
+The definitions are currently in sync with the MCP schema version [2026-07-28](https://github.com/modelcontextprotocol/modelcontextprotocol/tree/main/schema/2026-07-28).
 
 For additional context, see: [gRPC as a Native Transport for MCP](https://cloud.google.com/blog/products/networking/grpc-as-a-native-transport-for-mcp).
 
