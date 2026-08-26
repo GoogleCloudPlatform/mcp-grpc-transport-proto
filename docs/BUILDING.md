@@ -14,17 +14,17 @@ The Python package is located in `src/mcp_grpc_transport_proto`.
    uv sync
    ```
 
-2. Generate protobuf files:
-   ```bash
-   uv run python generate.py
-   ```
-
-3. Build the package:
+2. Build the package:
    ```bash
    uv build
    ```
 
-4. Build artifacts:
+   The compiled Protobuf/gRPC Python code (`*_pb2.py`, etc.) is not checked into git — it's generated automatically as part of `uv sync` and `uv build`. If you're iterating on `.proto` changes and just want to regenerate the bindings without a full install/build, run:
+   ```bash
+   uv run python generate.py
+   ```
+
+3. Build artifacts:
    The build artifacts (wheel and source distribution) will be located in the `dist/` directory.
 
 ### Publishing to PyPI
