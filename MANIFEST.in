@@ -1,0 +1,2 @@
+include generate.py
+recursive-include proto *.proto

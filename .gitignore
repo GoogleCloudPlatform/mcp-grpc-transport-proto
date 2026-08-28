@@ -19,3 +19,8 @@ build/
 
 # Lock file (library)
 uv.lock
+
+# Generated protobuf/gRPC code (run `uv run python generate.py` to build)
+src/mcp_grpc_transport_proto/*_pb2.py
+src/mcp_grpc_transport_proto/*_pb2.pyi
+src/mcp_grpc_transport_proto/*_pb2_grpc.py

@@ -2,7 +2,7 @@
 
 This repository contains the Protocol Buffer definitions (`.proto`) and generated Python bindings for implementing the [Model Context Protocol (MCP)](https://modelcontextprotocol.io/) over gRPC.
 
-The definitions are currently in sync with the MCP schema version [2025-11-25](https://github.com/modelcontextprotocol/modelcontextprotocol/tree/main/schema/2025-11-25).
+The definitions are currently in sync with the MCP schema version [2026-07-28](https://github.com/modelcontextprotocol/modelcontextprotocol/tree/main/schema/2026-07-28).
 
 For additional context, see: [gRPC as a Native Transport for MCP](https://cloud.google.com/blog/products/networking/grpc-as-a-native-transport-for-mcp).
 
@@ -11,7 +11,7 @@ For additional context, see: [gRPC as a Native Transport for MCP](https://cloud.
 *   `proto/`: Contains the raw Protocol Buffer definitions.
     *   [mcp.proto](file:///usr/local/google/home/bpawan/workspace/mcp-grpc-transport-proto/proto/mcp.proto): Defines the `Mcp` gRPC service.
     *   [mcp_messages.proto](file:///usr/local/google/home/bpawan/workspace/mcp-grpc-transport-proto/proto/mcp_messages.proto): Defines the request/response payloads.
-*   `src/mcp_grpc_transport_proto/`: The generated Python package containing the compiled Protobuf and gRPC code.
+*   `src/mcp_grpc_transport_proto/`: The Python package. The compiled Protobuf and gRPC code is generated into this directory at build/install time and is not checked into git.
 *   `generate.py`: A utility script to compile the `.proto` files into the Python package.
 *   `examples/`: Contains example Python code demonstrating how to construct and use these messages.
 
@@ -36,7 +36,7 @@ uv run python examples/basic_usage.py
 ```
 
 ### Generating Protos
-If you modify the `.proto` files, you can regenerate the Python bindings by running:
+The compiled Python bindings are generated automatically whenever the package is built or installed (e.g. via `uv sync`, `pip install .`, or `uv build`) — they're not checked into git. If you modify the `.proto` files and want to regenerate them without a full install, run:
 ```bash
 uv run python generate.py
 ```
