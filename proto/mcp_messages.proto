@@ -9,6 +9,7 @@ package model_context_protocol;
 
 import "google/protobuf/duration.proto";
 import "google/protobuf/struct.proto";
+import "google/protobuf/timestamp.proto";
 
 option java_multiple_files = true;
 option java_outer_classname = "McpMessagesProto";
@@ -613,4 +614,61 @@ message CompletionResponse {
   repeated string values = 2;
   optional int64 total_matches = 3;
   bool has_more = 4;
+}
+
+//
+// Tasks
+//
+
+// The execution status of a task.
+enum TaskStatus {
+  TASK_STATUS_UNSPECIFIED = 0;
+  // The request is currently being processed.
+  TASK_STATUS_WORKING = 1;
+  // The task is waiting for additional input before continuing.
+  TASK_STATUS_INPUT_REQUIRED = 2;
+  // The task completed successfully and results are available.
+  TASK_STATUS_COMPLETED = 3;
+  // The task did not complete successfully.
+  TASK_STATUS_FAILED = 4;
+  // The task was cancelled before completion.
+  TASK_STATUS_CANCELLED = 5;
+}
+
+// Represents the state of a long-running task.
+message Task {
+  // Unique identifier for the task.
+  string task_id = 1;
+
+  // Current task state.
+  TaskStatus status = 2;
+
+  // Optional human-readable message describing the current task state.
+  optional string status_message = 3;
+
+  // Time when the task was created.
+  google.protobuf.Timestamp created_at = 4;
+
+  // Time when the task was last updated.
+  google.protobuf.Timestamp last_updated_at = 5;
+
+  // Retention duration from creation before the task may be deleted.
+  google.protobuf.Duration ttl = 6;
+
+  // Suggested polling interval.
+  google.protobuf.Duration poll_interval = 7;
+
+  // Populated when status is TASK_STATUS_INPUT_REQUIRED to carry
+  // server-initiated input requests (e.g., elicitations) and request_state.
+  ResponseFields input_required_result = 8;
+}
+
+message GetTaskRequest {
+  RequestFields common = 1;
+  string task_id = 2;
+}
+
+message CancelTaskRequest {
+  RequestFields common = 1;
+  string task_id = 2;
 }
