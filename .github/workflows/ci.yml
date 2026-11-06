@@ -24,7 +24,7 @@ jobs:
         persist-credentials: false
 
     - name: Install uv
-      uses: astral-sh/setup-uv@e58605a97d12d6fb2be1be9e4d23c2f8f53f1aa8 # v5.3.1
+      uses: astral-sh/setup-uv@f94ec6bedd8674c4426838e6b50417d36b6ab231 # v5.3.1
       with:
         python-version: ${{ matrix.python-version }}
 
@@ -55,7 +55,7 @@ jobs:
         persist-credentials: false
 
     - name: Set up uv
-      uses: astral-sh/setup-uv@e58605a97d12d6fb2be1be9e4d23c2f8f53f1aa8 # v5.3.1
+      uses: astral-sh/setup-uv@f94ec6bedd8674c4426838e6b50417d36b6ab231 # v5.3.1
       with:
         python-version: "3.12"
 
@@ -77,13 +77,13 @@ jobs:
 
     - name: Authenticate to Google Cloud (OSS Exit Gate)
       if: steps.check_version.outputs.should_publish == 'true'
-      uses: google-github-actions/auth@c200f3691d83b41bf9bbd8638997a462592937ed
+      uses: google-github-actions/auth@c200f3691d83b41bf9bbd8638997a462592937ed # v2.1.13
       with:
         workload_identity_provider: 'projects/305452601764/locations/global/workloadIdentityPools/builders/providers/github'
 
     - name: Set up Cloud SDK
       if: steps.check_version.outputs.should_publish == 'true'
-      uses: google-github-actions/setup-gcloud@e427ad8a34f8676edf47cf7d7925499adf3eb74f
+      uses: google-github-actions/setup-gcloud@e427ad8a34f8676edf47cf7d7925499adf3eb74f # v2.2.1
 
     - name: Clean up stale releases from staging repo
       run: |
